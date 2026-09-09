@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Flikker"
+description = "A polished atmospheric 2D action-platformer prototype about a lantern-bearing traveler following a mysterious ghost through a world that changes in darkness."
+version = "1.0.0"
+id = "artifacts/flikker"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23127
+
+[services.development]
+run = "pnpm --filter @workspace/flikker run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/flikker", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/flikker/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23127"
+BASE_PATH = "/"

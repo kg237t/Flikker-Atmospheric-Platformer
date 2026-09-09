@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Unbounded:wght@400;500;600&display=swap');
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@plugin "@tailwindcss/typography";
+
+:root {
+  --background: 218 31% 7%;
+  --foreground: 43 30% 88%;
+  --card: 220 26% 11%;
+  --card-foreground: 43 30% 88%;
+  --card-border: 220 19% 21%;
+  --popover: 220 26% 10%;
+  --popover-foreground: 43 30% 88%;
+  --popover-border: 220 19% 25%;
+  --primary: 39 92% 64%;
+  --primary-foreground: 220 28% 9%;
+  --secondary: 216 22% 17%;
+  --secondary-foreground: 43 30% 88%;
+  --muted: 218 21% 14%;
+  --muted-foreground: 215 13% 58%;
+  --accent: 188 55% 62%;
+  --accent-foreground: 219 28% 8%;
+  --destructive: 0 59% 51%;
+  --destructive-foreground: 43 30% 92%;
+  --border: 218 19% 23%;
+  --input: 218 19% 23%;
+  --ring: 39 92% 64%;
+  --app-font-sans: 'Unbounded', system-ui, sans-serif;
+  --app-font-mono: 'DM Mono', monospace;
+  --app-font-serif: Georgia, serif;
+  --radius: 0.25rem;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--app-font-mono);
+  -webkit-font-smoothing: antialiased;
+}
+button, input { font: inherit; }
+button { cursor: pointer; }
+
+.game-shell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: #080d15;
+  isolation: isolate;
+}
+.game-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.game-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+.game-overlay > * { pointer-events: auto; }
+.grain {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  opacity: .08;
+  mix-blend-mode: screen;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.87' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E");
+}
+.title-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 2rem;
+  background:
+    radial-gradient(ellipse at 50% 55%, rgba(191, 134, 53, .08), transparent 30%),
+    linear-gradient(180deg, rgba(5, 9, 16, .1), rgba(5, 8, 14, .82));
+}
+.title-content { width: min(720px, 100%); text-align: center; animation: arrival 1.2s ease both; }
+.eyebrow { margin: 0 0 1.1rem; color: #bfccd0; font: 500 .68rem/1 var(--app-font-mono); letter-spacing: .34em; text-transform: uppercase; }
+.title-mark { margin: 0; color: #ebddbc; font: 500 clamp(3.2rem, 12vw, 8.5rem)/.92 var(--app-font-sans); letter-spacing: -.09em; text-shadow: 0 0 45px rgba(225, 163, 69, .14); }
+.title-mark span { display: block; margin-top: .55rem; color: #dca14c; font: 400 clamp(.72rem, 2vw, 1.05rem)/1 var(--app-font-mono); letter-spacing: .52em; text-indent: .52em; }
+.title-rule { width: 110px; height: 1px; margin: 2.6rem auto 1.4rem; background: linear-gradient(90deg, transparent, #dca14c, transparent); }
+.title-copy { max-width: 375px; margin: 0 auto; color: #8d9ba2; font: .77rem/1.8 var(--app-font-mono); }
+.title-actions { display: flex; justify-content: center; gap: .75rem; margin-top: 2.2rem; flex-wrap: wrap; }
+.game-button {
+  min-width: 155px;
+  padding: .9rem 1.15rem;
+  border: 1px solid rgba(220, 161, 76, .42);
+  border-radius: 2px;
+  color: #17130c;
+  background: #dca14c;
+  box-shadow: 0 7px 28px rgba(206, 139, 42, .13);
+  font: 500 .68rem var(--app-font-mono);
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  transition: transform .2s, background-color .2s, border-color .2s;
+}
+.game-button:hover { transform: translateY(-2px); background: #efb965; }
+.game-button.ghost { color: #c9d0d1; background: rgba(17, 26, 35, .7); border-color: #37434a; box-shadow: none; }
+.game-button.ghost:hover { background: rgba(37, 49, 58, .8); border-color: #6c7e85; }
+.title-note { margin-top: 4.5rem; color: #59666c; font-size: .6rem; letter-spacing: .13em; text-transform: uppercase; }
+.hud { position: absolute; inset: 0; padding: 1.5rem; color: #d6d9d2; pointer-events: none; }
+.hud-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.hud-area { padding-left: .15rem; text-transform: uppercase; }
+.hud-kicker { color: #718087; font-size: .55rem; letter-spacing: .2em; }
+.hud-location { margin-top: .35rem; color: #d6c9a8; font-size: .77rem; letter-spacing: .16em; }
+.hud-bars { display: flex; gap: 1rem; align-items: flex-start; }
+.meter { width: min(190px, 28vw); }
+.meter-label { display: flex; justify-content: space-between; margin-bottom: .4rem; color: #89949a; font-size: .55rem; letter-spacing: .16em; }
+.meter-label strong { color: #d8b767; font-weight: 400; }
+.meter-track { height: 4px; overflow: hidden; background: rgba(186, 197, 191, .17); }
+.meter-fill { height: 100%; background: #dbad59; box-shadow: 0 0 12px rgba(232, 173, 73, .7); transition: width .18s ease; }
+.meter-fill.health { background: #aabcc1; box-shadow: 0 0 10px rgba(160, 199, 207, .45); }
+.boss-meter { position: absolute; left: 50%; bottom: 2rem; width: min(470px, 58vw); transform: translateX(-50%); text-align: center; }
+.boss-name { color: #b6c4c2; font-size: .57rem; letter-spacing: .3em; text-transform: uppercase; }
+.boss-track { height: 6px; margin-top: .6rem; background: rgba(119, 144, 143, .2); border: 1px solid rgba(171, 194, 188, .16); }
+.boss-fill { height: 100%; background: #b6c4c2; box-shadow: 0 0 13px rgba(193, 219, 205, .5); transition: width .2s ease; }
+.hud-hint { position: absolute; left: 1.5rem; bottom: 1.4rem; color: rgba(181, 190, 191, .58); font-size: .57rem; letter-spacing: .04em; }
+.hud-hint kbd { margin: 0 .18rem; padding: .18rem .35rem; border: 1px solid rgba(161, 176, 178, .25); color: #c4cdca; font-size: .56rem; }
+.toast-line { position: absolute; left: 50%; top: 15%; transform: translateX(-50%); color: #d3bd8d; font-size: .65rem; letter-spacing: .22em; text-transform: uppercase; text-shadow: 0 2px 14px #030507; animation: fade-line 3.8s ease both; white-space: nowrap; }
+.pause-panel, .ending-panel { width: min(450px, calc(100% - 2.5rem)); padding: 2.3rem; border: 1px solid rgba(168, 180, 176, .22); background: rgba(12, 19, 27, .92); box-shadow: 0 20px 80px rgba(0, 0, 0, .45); text-align: center; backdrop-filter: blur(12px); }
+.pause-wrap, .ending-wrap { display: flex; align-items: center; justify-content: center; min-height: 100%; background: rgba(3, 7, 12, .5); }
+.panel-kicker { color: #c99143; font-size: .58rem; letter-spacing: .25em; text-transform: uppercase; }
+.panel-title { margin: .75rem 0 1.7rem; color: #e5dfcd; font: 500 1.7rem/1.1 var(--app-font-sans); letter-spacing: -.06em; }
+.settings { margin: 1.4rem 0 1.6rem; text-align: left; }
+.setting { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .8rem 0; border-top: 1px solid rgba(143, 158, 158, .13); color: #aebabb; font-size: .65rem; letter-spacing: .05em; }
+.setting input[type="range"] { width: 150px; accent-color: #dca14c; }
+.setting input[type="checkbox"] { accent-color: #dca14c; }
+.panel-actions { display: flex; gap: .6rem; justify-content: center; flex-wrap: wrap; }
+.panel-actions .game-button { min-width: 130px; }
+.ending-panel { padding: 3.1rem 2.5rem; }
+.ending-panel .panel-title { font-size: clamp(1.7rem, 5vw, 2.5rem); }
+.ending-copy { color: #9aa9aa; font-size: .72rem; line-height: 1.9; }
+.ending-mark { margin: 2rem auto; width: 46px; height: 46px; border: 1px solid #dca14c; border-radius: 50%; box-shadow: 0 0 34px rgba(220, 161, 76, .3); }
+@keyframes arrival { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fade-line { 0%, 100% { opacity: 0; } 15%, 80% { opacity: 1; } }
+@media (max-width: 700px) {
+  .hud { padding: 1rem; }
+  .hud-bars { display: block; }
+  .meter { width: 125px; margin-bottom: .55rem; }
+  .hud-hint { left: 1rem; bottom: 1rem; font-size: .5rem; }
+  .hud-location { font-size: .65rem; }
+  .title-note { margin-top: 3rem; }
+  .boss-meter { bottom: 1.2rem; width: 68vw; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

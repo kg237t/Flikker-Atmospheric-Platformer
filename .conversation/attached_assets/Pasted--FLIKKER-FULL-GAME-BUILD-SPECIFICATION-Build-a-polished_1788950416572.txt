@@ -1,0 +1,1419 @@
+# FLIKKER — FULL GAME BUILD SPECIFICATION
+
+Build a polished, playable 2D atmospheric action-platformer called:
+
+FLIKKER
+
+The game should feel like a small premium indie game prototype, NOT a generic AI-generated browser game.
+
+The central experience is:
+
+PLATFORM → EXPLORE → LIGHT FLICKERS → WORLD CHANGES → FIGHT → FOLLOW THE GHOST → DISCOVER THE MYSTERY
+
+The player wakes up in a dark, abandoned world with only a small flickering lantern/light.
+
+A mysterious ghost appears throughout the level and seems to guide the player toward an exit.
+
+But the player does not know why the ghost is helping them.
+
+The world itself is unstable and changes whenever the player's light becomes dangerously weak.
+
+The first version should be a polished vertical slice lasting approximately 10–20 minutes.
+
+IMPORTANT:
+Prioritize GAME FEEL, VISUAL QUALITY, ATMOSPHERE, RESPONSIVE CONTROLS, LEVEL DESIGN, LIGHTING, ANIMATION, AUDIO, and POLISH over adding lots of systems.
+
+Do NOT create a huge RPG.
+Do NOT create an inventory-heavy survival game.
+Do NOT create multiplayer.
+Do NOT create procedural civilization systems.
+Do NOT create unnecessary menus or complicated progression.
+
+Make a small game that feels exceptionally polished.
+
+
+==================================================
+1. TECHNOLOGY
+==================================================
+
+Build this as a browser-playable 2D game.
+
+Use a technology stack that works reliably inside Replit and can run with a normal web preview.
+
+Prefer:
+- TypeScript
+- HTML5 Canvas or a similarly reliable 2D rendering approach
+- clean modular architecture
+- no unnecessary dependencies
+
+The game must run with:
+
+npm install
+npm run dev
+
+and have a production build that works.
+
+Keep the code readable and modular.
+
+Separate:
+- player
+- enemies
+- combat
+- lighting
+- level generation
+- level shifting
+- ghost
+- camera
+- particles
+- audio
+- UI
+- game state
+- story/dialogue
+
+Do not put the entire game into one enormous file.
+
+
+==================================================
+2. VISUAL DIRECTION
+==================================================
+
+THIS IS EXTREMELY IMPORTANT.
+
+The game must NOT look like:
+- basic colored rectangles
+- default geometric shapes
+- programmer art
+- a generic platformer template
+- a white background
+- flat unlit environments
+- random AI-generated UI
+
+The visual identity should be:
+
+DARK
+ATMOSPHERIC
+MYSTERIOUS
+CINEMATIC
+MINIMAL
+HANDCRAFTED-LOOKING
+COHESIVE
+
+Think of the visual language of atmospheric indie games, but DO NOT copy any specific game's art.
+
+Use a dark environment with:
+- deep blue/black shadows
+- muted gray stone
+- desaturated vegetation
+- subtle fog
+- warm light from the player's lantern
+- pale supernatural light from the ghost
+- strong contrast between darkness and illuminated areas
+
+The player should be visually readable even in darkness.
+
+The environment should have layers:
+1. foreground
+2. playable platforms
+3. midground scenery
+4. background silhouettes
+5. distant atmospheric layers
+
+Create depth using:
+- parallax backgrounds
+- lighting
+- fog
+- particles
+- shadows
+- silhouettes
+- subtle camera movement
+
+The world should feel large even though the first vertical slice is small.
+
+
+==================================================
+3. LIGHTING SYSTEM
+==================================================
+
+The LIGHT is the defining mechanic of the game.
+
+The player carries a lantern.
+
+Create a dynamic circular light around the player.
+
+The light should:
+- illuminate nearby terrain
+- illuminate enemies
+- illuminate interactive objects
+- reveal environmental details
+- cast a soft glow
+- have a subtle flicker
+- become weaker as the lantern drains
+- visually pulse during danger
+
+Use layered lighting rather than a simple circle.
+
+The lighting should have:
+- outer soft glow
+- main illumination area
+- subtle inner brightness
+- darkness outside the radius
+- slight atmospheric bloom
+
+The darkness should NOT simply be a black overlay.
+
+Use gradients, shadows, fog and opacity to create depth.
+
+When the lantern is healthy:
+the player can comfortably see nearby platforms.
+
+When the lantern becomes weak:
+the light radius shrinks.
+
+The screen should subtly darken.
+
+The lantern begins flickering.
+
+The flickering should become more noticeable as the light gets weaker.
+
+
+==================================================
+4. FLICKER MECHANIC
+==================================================
+
+The title mechanic is FLICKER.
+
+The lantern has a LIGHT ENERGY value.
+
+Example:
+
+100–70%
+Stable
+
+70–40%
+Occasional flicker
+
+40–20%
+Frequent flicker
+
+20–5%
+Heavy flickering
+
+0%
+CRITICAL EVENT
+
+When the lantern reaches 0:
+
+DO NOT simply kill the player.
+
+Instead:
+
+THE WORLD CHANGES.
+
+The level temporarily becomes unstable.
+
+Platforms can:
+- disappear
+- move
+- rotate
+- change position
+- reveal alternate paths
+- collapse
+- appear from darkness
+
+Certain enemies can also change behavior.
+
+After the world shift:
+the lantern slowly returns to a safe level.
+
+This creates a gameplay cycle:
+
+EXPLORE
+↓
+LIGHT WEAKENS
+↓
+DANGER
+↓
+FLICKER
+↓
+WORLD SHIFT
+↓
+NEW PATH
+↓
+CONTINUE
+
+
+==================================================
+5. PLAYER
+==================================================
+
+Create a responsive platforming character.
+
+Controls:
+
+A / D:
+move left/right
+
+SPACE:
+jump
+
+SHIFT:
+dash
+
+J or LEFT CLICK:
+attack
+
+K or RIGHT CLICK:
+light burst
+
+ESC:
+pause
+
+Movement must feel RESPONSIVE.
+
+Do not make the player float.
+
+Implement:
+- acceleration
+- deceleration
+- gravity
+- jump buffering
+- coyote time
+- variable jump height
+- air control
+- dash
+- attack cooldown
+- hit feedback
+
+Jumping should feel satisfying.
+
+The player should be able to:
+- run
+- jump
+- double-jump ONLY if earned later
+- dash
+- attack
+- use the lantern
+
+
+==================================================
+6. PLAYER ANIMATION
+==================================================
+
+Do not leave the player as a static rectangle.
+
+Create at least visually distinct states for:
+- idle
+- walking
+- running
+- jumping
+- falling
+- landing
+- attacking
+- dashing
+- hurt
+- death
+
+If custom sprite art is unavailable, create a stylized silhouette character using layered vector/canvas shapes with animation.
+
+The silhouette should have:
+- body
+- head
+- cloak/jacket
+- arms
+- legs
+- lantern
+
+The lantern should visibly swing slightly while moving.
+
+Use squash/stretch and small animation offsets to improve game feel.
+
+
+==================================================
+7. COMBAT
+==================================================
+
+Combat should be simple but satisfying.
+
+The player has a melee weapon.
+
+Attack:
+- short range
+- clear animation
+- hitbox
+- cooldown
+- impact particles
+- sound effect
+- enemy knockback
+
+Do NOT create complex RPG stats.
+
+Combat should be based on:
+POSITION
+TIMING
+LIGHT
+MOVEMENT
+
+Some enemies should be resistant or invulnerable while completely inside darkness.
+
+The player's light burst can temporarily expose them.
+
+Combat loop:
+
+ILLUMINATE
+↓
+ENEMY BECOMES VULNERABLE
+↓
+ATTACK
+↓
+DODGE
+↓
+REPOSITION
+↓
+ATTACK AGAIN
+
+
+==================================================
+8. LIGHT BURST
+==================================================
+
+The player can perform a short-range light burst.
+
+The burst should:
+- expand rapidly
+- illuminate nearby darkness
+- stun certain enemies
+- reveal hidden platforms
+- consume some lantern energy
+- create a strong visual flash
+- create particles
+- have a satisfying sound
+
+Give it a cooldown.
+
+This should become one of the most satisfying actions in the game.
+
+
+==================================================
+9. ENEMIES
+==================================================
+
+Create 3 enemy types for the vertical slice.
+
+ENEMY 1 — HOLLOW
+
+A humanoid shadow creature.
+
+Behavior:
+- hides in darkness
+- approaches the player
+- attacks at close range
+- becomes vulnerable in strong light
+
+Visual:
+- black/gray silhouette
+- glowing eyes or subtle supernatural detail
+- animated movement
+
+It should feel mysterious rather than cartoonish.
+
+
+ENEMY 2 — SKITTER
+
+A fast creature that can move along platforms and walls.
+
+Behavior:
+- patrols
+- notices player
+- rapidly approaches
+- performs short attacks
+- retreats when exposed to strong light
+
+Visual:
+- low profile
+- multiple moving limbs
+- fast animation
+- unsettling silhouette
+
+
+ENEMY 3 — WATCHER
+
+This enemy is primarily psychological.
+
+It usually stands in the darkness.
+
+It watches the player.
+
+When the player looks away or the lantern flickers:
+it changes position.
+
+It should not constantly attack.
+
+Use:
+- silhouette
+- eye/glow effect
+- subtle animation
+- sound cues
+
+The player should wonder:
+
+"Was that thing there before?"
+
+
+==================================================
+10. BOSS
+==================================================
+
+Create one simple boss for the end of the vertical slice.
+
+Name:
+
+THE LANTERN EATER
+
+The boss should be significantly larger than normal enemies.
+
+It should be an intimidating silhouette surrounded by darkness.
+
+Core mechanic:
+
+The boss attacks the PLAYER'S LIGHT.
+
+Its attacks can:
+- temporarily reduce lantern energy
+- force the player into darkness
+- create dangerous platform patterns
+- summon smaller enemies
+
+The boss becomes vulnerable after the player uses a light burst at the correct moment.
+
+Boss loop:
+
+SURVIVE
+↓
+AVOID ATTACK
+↓
+CHARGE LIGHT
+↓
+FLASH BOSS
+↓
+ATTACK
+↓
+REPEAT
+
+Give the boss:
+- health bar
+- attack patterns
+- telegraphed attacks
+- hit reactions
+- phases
+- particles
+- screen shake
+- audio escalation
+
+Keep it achievable for a prototype.
+
+
+==================================================
+11. PLATFORMING
+==================================================
+
+The level must be designed as an ACTUAL PLATFORMER.
+
+Do not randomly scatter platforms.
+
+Use deliberate platforming challenges.
+
+Include:
+- small jumps
+- large jumps
+- vertical sections
+- moving platforms
+- disappearing platforms
+- narrow platforms
+- optional exploration areas
+- hidden paths
+- enemy encounters
+- safe areas
+- checkpoint areas
+
+The player should always have enough information to understand what they are attempting.
+
+Avoid unfair jumps.
+
+Never kill the player immediately after spawning.
+
+The first 2–3 minutes should teach mechanics safely.
+
+
+==================================================
+12. LEVEL STRUCTURE
+==================================================
+
+Create one interconnected level divided into approximately:
+
+AREA 1 — THE AWAKENING
+
+Safe introduction.
+
+Teach:
+movement
+jumping
+lantern
+basic platforming
+
+No dangerous enemies immediately.
+
+The ghost appears briefly.
+
+
+AREA 2 — THE HOLLOW PATH
+
+Introduce:
+first enemy
+light vulnerability
+basic combat
+
+
+AREA 3 — THE SHIFTING HALL
+
+Introduce:
+world shifting
+
+The player sees platforms rearrange when the lantern fails.
+
+The ghost becomes more active.
+
+
+AREA 4 — THE SUNKEN GARDEN
+
+Introduce:
+environmental exploration
+hidden paths
+Watcher enemy
+
+Add environmental storytelling.
+
+
+AREA 5 — THE OLD CHAPEL
+
+Stronger atmosphere.
+
+The player finds evidence that someone else carried the same lantern.
+
+The ghost becomes visibly uncomfortable or distant.
+
+
+AREA 6 — THE DESCENT
+
+More difficult platforming.
+
+More enemies.
+
+Frequent flickering.
+
+The player begins questioning whether the ghost is helping.
+
+
+AREA 7 — THE LANTERN EATER
+
+Boss arena.
+
+Boss fight.
+
+Then story reveal.
+
+
+==================================================
+13. CHECKPOINTS
+==================================================
+
+Add checkpoints throughout the level.
+
+Checkpoint visual:
+
+A small abandoned lantern/stone shrine.
+
+When activated:
+- creates a soft light
+- saves progress
+- restores some lantern energy
+- restores some health
+
+If the player dies:
+respawn at the most recent checkpoint.
+
+Do NOT make death frustrating.
+
+
+==================================================
+14. DEATH
+==================================================
+
+Death should be cinematic but quick.
+
+When the player dies:
+- slow time briefly
+- fade screen
+- show subtle animation
+- display:
+
+"THE LIGHT WENT OUT."
+
+Then:
+
+"RETRY"
+
+Do not make the player wait through a long animation.
+
+The player should be able to restart quickly.
+
+
+==================================================
+15. THE GHOST
+==================================================
+
+The ghost is one of the most important characters.
+
+Do not make it look like a generic white floating ghost.
+
+Design it as a mysterious humanoid silhouette made from translucent particles and pale light.
+
+The ghost should:
+- float
+- leave a faint particle trail
+- appear/disappear
+- react to the environment
+- occasionally look toward the player
+- point toward paths
+- wait for the player
+- disappear when approached too closely
+
+The ghost should feel intelligent.
+
+
+==================================================
+16. GHOST GAMEPLAY
+==================================================
+
+The ghost is not a permanent companion.
+
+It appears at specific moments.
+
+Examples:
+
+The player reaches a gap.
+
+The ghost appears on the other side.
+
+It waits.
+
+The player follows.
+
+Later:
+
+The ghost points toward a hidden platform.
+
+The player follows.
+
+Later:
+
+The ghost refuses to enter a room.
+
+This creates suspicion.
+
+
+==================================================
+17. GHOST MYSTERY
+==================================================
+
+The player should gradually discover:
+
+The ghost was once a person.
+
+That person carried a lantern.
+
+They entered this world before the player.
+
+They reached the end.
+
+But they never escaped.
+
+The ghost now guides people toward the same destination.
+
+WHY?
+
+Do not immediately explain.
+
+Let environmental storytelling reveal the answer.
+
+Use:
+- abandoned lanterns
+- drawings
+- symbols
+- broken signs
+- environmental details
+- short ghost dialogue
+- visual memories
+- old rooms
+- objects associated with previous travelers
+
+
+==================================================
+18. STORY
+==================================================
+
+The story should be simple enough to understand but mysterious enough to make players curious.
+
+Opening:
+
+The player wakes up.
+
+No explanation.
+
+The lantern flickers.
+
+The ghost appears.
+
+The ghost looks at the player.
+
+Then walks away.
+
+The player follows.
+
+First major question:
+
+WHY IS THE GHOST HELPING ME?
+
+
+Mid-game revelation:
+
+The player discovers evidence of previous travelers.
+
+They all carried lanterns.
+
+Some never returned.
+
+
+Late-game revelation:
+
+The ghost isn't guiding the player simply toward an exit.
+
+It is guiding the player toward THE END.
+
+The player doesn't yet know what that means.
+
+
+Boss ending:
+
+After defeating The Lantern Eater, the player reaches a large sealed doorway.
+
+The ghost stands beside it.
+
+The ghost looks at the player.
+
+Then the ghost slowly turns toward the doorway.
+
+The screen fades.
+
+Display:
+
+"YOU FOLLOWED IT THIS FAR."
+
+Then:
+
+"ARE YOU SURE IT WANTED YOU TO ESCAPE?"
+
+END OF DEMO
+
+
+==================================================
+19. DIALOGUE
+==================================================
+
+Keep dialogue extremely limited.
+
+Do NOT fill the game with text boxes.
+
+The ghost should communicate mostly through:
+- movement
+- gestures
+- positioning
+- visual reactions
+
+Use short text only for important moments.
+
+Examples of tone:
+
+"..."
+
+"Not there."
+
+"Keep walking."
+
+"Don't let it go dark."
+
+"You're almost there."
+
+Avoid cheesy exposition.
+
+
+==================================================
+20. ENVIRONMENTAL STORYTELLING
+==================================================
+
+The environment should tell the story.
+
+Place details such as:
+- abandoned lanterns
+- old footprints
+- strange symbols
+- broken equipment
+- destroyed shelters
+- old paintings
+- scratched messages
+- statues
+- doors
+- chains
+- strange roots
+- supernatural marks
+
+Some objects should react when illuminated.
+
+Example:
+
+A symbol is invisible in darkness.
+
+The lantern reveals it.
+
+Later the player sees the same symbol somewhere else.
+
+This creates a mystery.
+
+
+==================================================
+21. LEVEL SHIFT SYSTEM
+==================================================
+
+When the lantern completely fails:
+
+Trigger a controlled level shift.
+
+Do NOT randomly regenerate the entire level.
+
+Instead use handcrafted alternate states.
+
+Example:
+
+STATE A:
+platform exists on left
+
+STATE B:
+platform exists on right
+
+STATE A:
+bridge intact
+
+STATE B:
+bridge collapsed
+
+STATE A:
+door closed
+
+STATE B:
+secret passage open
+
+This keeps the platforming fair while still making the world feel unstable.
+
+The player should eventually learn:
+
+"DARKNESS CHANGES REALITY."
+
+
+==================================================
+22. CAMERA
+==================================================
+
+Use a smooth side-scrolling camera.
+
+Camera should:
+- follow player smoothly
+- look slightly ahead in movement direction
+- have subtle vertical adjustment
+- zoom slightly during boss encounters
+- use subtle screen shake during heavy impacts
+- never make platforming difficult to read
+
+Do NOT make the camera jitter constantly.
+
+Screen shake should be subtle and purposeful.
+
+
+==================================================
+23. PARTICLES AND VFX
+==================================================
+
+Use particles heavily but tastefully.
+
+Include:
+- lantern sparks
+- dust
+- fog
+- falling ash
+- enemy particles
+- attack trails
+- hit sparks
+- light burst particles
+- ghost particles
+- environmental particles
+
+The world should feel alive even when nothing is happening.
+
+
+==================================================
+24. AUDIO
+==================================================
+
+Audio is extremely important.
+
+Create an atmospheric sound system.
+
+Include:
+- ambient wind
+- distant noises
+- footsteps
+- jump sound
+- landing sound
+- attack sound
+- enemy sounds
+- lantern hum
+- lantern flicker sound
+- light burst sound
+- ghost sound
+- boss sounds
+
+Music should be minimal.
+
+Use atmospheric drones/pulses rather than constant loud music.
+
+As the lantern becomes weaker:
+audio should subtly change.
+
+Add:
+- low hum
+- distant whispers/noises
+- heartbeat-like tension
+- environmental distortion
+
+Do not use copyrighted music.
+
+
+==================================================
+25. GAME FEEL
+==================================================
+
+This is one of the highest priorities.
+
+Every action should feel responsive.
+
+Implement:
+- hit-stop on strong attacks
+- subtle screen shake
+- particles
+- sound feedback
+- animation easing
+- squash/stretch
+- landing dust
+- attack trails
+- enemy knockback
+- light flashes
+
+Example:
+
+Player hits enemy.
+
+Immediately:
+1. attack animation
+2. hitbox connects
+3. enemy flashes
+4. enemy moves backward
+5. particles appear
+6. sound plays
+7. screen shakes slightly
+8. tiny hit-stop occurs
+
+The game should FEEL good even with simple art.
+
+
+==================================================
+26. UI
+==================================================
+
+UI should be minimal.
+
+Do NOT make a generic dashboard.
+
+During gameplay show:
+
+Top-left:
+small lantern/light indicator
+
+Top-right:
+minimal health indicator
+
+No giant HUD.
+
+No unnecessary numbers.
+
+Use typography that fits the dark atmospheric aesthetic.
+
+Menus:
+- Start
+- Continue
+- Settings
+- Restart
+- Quit to title
+
+Use a consistent visual language.
+
+Dark background.
+Subtle glow.
+Minimal text.
+Smooth transitions.
+
+
+==================================================
+27. TITLE SCREEN
+==================================================
+
+Create a cinematic title screen.
+
+Display:
+
+FLIKKER
+
+Under it:
+
+"THE LIGHT SHOWS YOU THE WAY."
+
+Buttons:
+
+BEGIN
+CONTINUE
+SETTINGS
+
+Background:
+dark environment
+faint fog
+distant silhouette
+small flickering light
+
+The title should subtly flicker once every few seconds.
+
+
+==================================================
+28. TUTORIAL
+==================================================
+
+Do NOT make a giant tutorial window.
+
+Teach mechanics naturally.
+
+First screen:
+
+"WASD — MOVE"
+
+Then:
+
+"SPACE — JUMP"
+
+Then:
+
+"J — ATTACK"
+
+Then:
+
+"K — LIGHT BURST"
+
+Then the player discovers the lantern mechanic naturally.
+
+Use environmental prompts that fade away.
+
+
+==================================================
+29. ACCESSIBILITY
+==================================================
+
+Include:
+- adjustable volume
+- screen shake toggle
+- reduced flicker option
+- brightness option
+- keyboard controls
+- pause functionality
+
+The game should remain playable even with reduced visual flickering.
+
+
+==================================================
+30. PERFORMANCE
+==================================================
+
+The game must run smoothly in a browser.
+
+Target:
+60 FPS on a normal modern laptop.
+
+Avoid:
+- excessive DOM elements
+- unnecessary React rerenders
+- huge images
+- expensive per-frame operations
+- memory leaks
+
+Use Canvas for gameplay rendering if appropriate.
+
+Keep game state separate from rendering.
+
+
+==================================================
+31. SAVE SYSTEM
+==================================================
+
+Use localStorage.
+
+Save:
+- checkpoint
+- story progress
+- settings
+- unlocked areas
+- lantern state where appropriate
+
+No backend is necessary for the prototype.
+
+
+==================================================
+32. POLISH
+==================================================
+
+Before considering the game complete, perform a polish pass.
+
+Check:
+
+PLAYER
+- movement responsive
+- jumping consistent
+- attacks responsive
+- dash feels good
+- animations work
+
+LIGHT
+- flicker feels natural
+- light feels beautiful
+- darkness is readable
+- world shift is visually obvious
+
+COMBAT
+- enemies react properly
+- attacks have feedback
+- hitboxes are fair
+- combat doesn't feel weightless
+
+PLATFORMING
+- jumps are fair
+- checkpoints are well placed
+- no unavoidable deaths
+
+GHOST
+- visually interesting
+- mysterious
+- movement feels intentional
+
+WORLD
+- atmospheric
+- visually coherent
+- interesting to explore
+
+AUDIO
+- no annoying repetition
+- important actions have feedback
+
+UI
+- minimal
+- readable
+- consistent
+
+
+==================================================
+33. IMPORTANT DESIGN PRINCIPLE
+==================================================
+
+Do NOT optimize for the number of features.
+
+Optimize for:
+
+"Would I want to play another 10 minutes?"
+
+
+==================================================
+34. BUILD ORDER
+==================================================
+
+Do NOT attempt everything simultaneously.
+
+Build in this order:
+
+PHASE 1
+Player movement
+Camera
+Basic platforms
+
+PHASE 2
+Lantern
+Dynamic darkness
+Lighting
+
+PHASE 3
+Combat
+One enemy
+
+PHASE 4
+Ghost
+Basic level
+
+PHASE 5
+Flicker system
+World shifting
+
+PHASE 6
+Additional enemies
+
+PHASE 7
+Story
+Environmental storytelling
+
+PHASE 8
+Boss
+
+PHASE 9
+Audio
+Particles
+VFX
+Polish
+
+PHASE 10
+Bug fixing
+Performance optimization
+Final UX pass
+
+
+==================================================
+35. CRITICAL REQUIREMENT
+==================================================
+
+DO NOT stop after creating a technical prototype.
+
+The result must feel like an actual GAME.
+
+Avoid generic placeholder presentation wherever reasonably possible.
+
+If custom artwork is required but unavailable, create a cohesive stylized visual system using procedural/vector/canvas graphics rather than random colored rectangles.
+
+All visual elements should belong to the same art direction.
+
+The first 30 seconds should immediately communicate:
+
+"This is a dark mysterious platformer about light."
+
+The first 5 minutes should communicate:
+
+"The world itself is changing."
+
+The end of the demo should communicate:
+
+"I don't know if I can trust the ghost."
+
+
+==================================================
+36. FINAL ACCEPTANCE TEST
+==================================================
+
+The game is successful only if a new player can:
+
+1. Start the game immediately.
+2. Understand movement without reading a manual.
+3. Jump across platforms comfortably.
+4. Notice the lantern.
+5. Understand that darkness is dangerous.
+6. Encounter the first enemy.
+7. Learn that light affects enemies.
+8. Meet the ghost.
+9. Become curious about the ghost.
+10. Experience the first world shift.
+11. Reach the boss.
+12. Fight the Lantern Eater.
+13. Reach the mysterious ending.
+14. Want to know what happens next.
+
+The final product should feel like a polished indie-game DEMO, not a collection of programming features.
+
+
+==================================================
+37. DO NOT DO THESE THINGS
+==================================================
+
+DO NOT:
+- turn this into an RPG
+- add skill trees
+- add crafting
+- add hunger
+- add multiplayer
+- add procedural infinite worlds
+- add hundreds of enemies
+- add huge inventories
+- add unnecessary currencies
+- add quests with dozens of objectives
+- add excessive dialogue
+- use generic dashboard UI
+- use bright cartoon visuals
+- use random neon colors
+- make the player die immediately
+- make platforming unfair
+- make the ghost explain the entire story
+- make the map completely random
+- sacrifice responsiveness for visual effects
+- sacrifice performance for unnecessary effects
+
+KEEP THE GAME SMALL.
+
+MAKE IT POLISHED.
+
+MAKE IT ATMOSPHERIC.
+
+MAKE IT FUN.
+
+
+==================================================
+FINAL INSTRUCTION
+==================================================
+
+Build the game now.
+
+Do not merely describe the implementation.
+
+Create the actual playable project.
+
+After building, test the major gameplay loop and fix obvious bugs.
+
+If a requested feature is too complex for the first implementation, implement the simplest polished version that preserves the intended player experience rather than removing the feature entirely.
+
+The priority order is:
+
+1. FUN
+2. RESPONSIVE CONTROLS
+3. VISUAL QUALITY
+4. LIGHTING / ATMOSPHERE
+5. LEVEL DESIGN
+6. COMBAT
+7. GHOST / MYSTERY
+8. AUDIO
+9. POLISH
+10. ADDITIONAL FEATURES
