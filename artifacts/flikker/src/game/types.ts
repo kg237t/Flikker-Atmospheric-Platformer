@@ -1,5 +1,6 @@
 export type GameMode = 'title' | 'playing' | 'paused' | 'ending';
 export type AreaId = 'THE THRESHOLD' | 'THE HOLLOW' | 'SHIFTING HALL' | 'THE WILDERNESS' | 'THE DESCENT' | 'EATER ARENA';
+export type EnemyKind = 'hollow' | 'skitter' | 'watcher' | 'eater';
 
 export interface Vec2 { x: number; y: number }
 export interface Particle extends Vec2 {
@@ -13,7 +14,7 @@ export interface Particle extends Vec2 {
 }
 export interface Enemy {
   id: number;
-  kind: 'hollow' | 'watcher' | 'eater';
+  kind: EnemyKind;
   x: number;
   y: number;
   w: number;
@@ -28,10 +29,13 @@ export interface Enemy {
   attackTimer: number;
   attackWindup: number;
   dead: boolean;
+  vulnerable?: boolean;
+  facing?: number;
+  phase?: number;
 }
-export interface Platform { x: number; y: number; w: number; h: number; moss?: boolean; }
+export interface Platform { x: number; y: number; w: number; h: number; moss?: boolean; oneWay?: boolean; material?: 'stone' | 'wood' | 'water'; }
 export interface Checkpoint { x: number; y: number; area: AreaId; activated: boolean; }
-export interface GameSettings { reducedFlicker: boolean; screenShake: boolean; brightness: number; volume: number; }
+export interface GameSettings { reducedFlicker: boolean; screenShake: boolean; brightness: number; volume: number; touchControls: boolean; }
 export interface InputState { left: boolean; right: boolean; jump: boolean; dash: boolean; attack: boolean; burst: boolean; pause: boolean; }
 export interface Player extends Vec2 {
   w: number;
@@ -54,6 +58,9 @@ export interface Player extends Vec2 {
   maxLantern: number;
   invuln: number;
   hurtFlash: number;
+  landTimer?: number;
+  runTime?: number;
+  hurtTimer?: number;
 }
 export interface GameSnapshot {
   mode: GameMode;
@@ -64,4 +71,11 @@ export interface GameSnapshot {
   bossMaxHealth: number;
   checkpoint: number;
   toast: string;
+  storyKicker: string;
+  storyLine: string;
+  storyTimer: number;
+  storyBeat: number;
+  ghostVisible: boolean;
+  ghostGesture: 'wait' | 'point' | 'watch' | 'vanish';
+  progress: number;
 }
