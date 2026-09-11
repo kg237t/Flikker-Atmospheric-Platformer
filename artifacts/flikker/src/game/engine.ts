@@ -19,9 +19,10 @@ const storyBeats: StoryBeat[] = [
   { x: 0, kicker: 'THE FIRST WAKING', line: 'The lantern is warm. Someone was holding it before you.', duration: 4.8 },
   { x: 720, kicker: 'THE HOLLOW', line: 'A bell rope sways without wind. The keeper left in a hurry.', duration: 3.8 },
   { x: 1560, kicker: 'THE SHIFTING HALL', line: 'Another bearer marked the stones: not a map. A warning.', duration: 4.4 },
-  { x: 2740, kicker: 'THE WILDERNESS', line: 'Roots drink from the old road. Something underneath remembers.', duration: 4.2 },
-  { x: 3920, kicker: 'THE DESCENT', line: 'The ghosts point down. They do not follow.', duration: 3.8 },
-  { x: 5050, kicker: 'THE LAST CHAPEL', line: 'Three lanterns. Three names scratched away.', duration: 4.2 },
+  { x: 2740, kicker: 'THE SUNKEN GARDEN', line: 'Roots drink from the old road. Something underneath remembers.', duration: 4.2 },
+  { x: 3420, kicker: 'THE CHAPEL', line: 'Three lanterns. Three names scratched away.', duration: 4.2 },
+  { x: 4300, kicker: 'THE DESCENT', line: 'The ghosts point down. They do not follow.', duration: 3.8 },
+  { x: 5700, kicker: 'THE BELL CHAMBER', line: 'The bell does not call the dead. It keeps them here.', duration: 4.2 },
 ];
 
 export class FlikkerEngine {
@@ -100,8 +101,16 @@ export class FlikkerEngine {
   setMode(mode: 'title' | 'playing' | 'paused' | 'ending') { this.mode = mode; }
   setSettings(settings: GameSettings) { this.settings = settings; this.audio.setVolume(settings.volume); }
   setInput(input: Partial<InputState>) { this.input = { ...this.input, ...input }; }
+  touchAction(action: keyof InputState, pressed = true) {
+    if (action === 'pause') {
+      this.mode = this.mode === 'paused' ? 'playing' : 'paused';
+      return;
+    }
+    this.setInput({ [action]: pressed });
+  }
   getSnapshot(): GameSnapshot {
-    const boss = this.enemies.find((enemy) => enemy.kind === 'eater');
+    const boss = this.enemies.find((enemy) => (enemy.kind === 'warden' || enemy.kind === 'eater') && !enemy.dead)
+      ?? this.enemies.find((enemy) => enemy.kind === 'eater');
     const ghost = this.ghostState();
     return {
       mode: this.mode, area: areaAt(this.player.x), lantern: this.player.lantern, health: this.player.health,
@@ -253,14 +262,22 @@ export class FlikkerEngine {
       enemy.phase = (enemy.phase ?? 0) + dt;
       const distance = p.x - enemy.x;
       const illuminated = Math.hypot(p.x - enemy.x, p.y - enemy.y) < 218 + p.lantern * 1.45 || p.burstTimer > 0;
-      if (enemy.kind !== 'eater' && !illuminated) { enemy.vx = lerp(enemy.vx, 0, dt * 3); continue; }
+      if (enemy.kind !== 'eater' && enemy.kind !== 'warden' && !illuminated) { enemy.vx = lerp(enemy.vx, 0, dt * 3); continue; }
       enemy.facing = distance < 0 ? -1 : 1;
-      if (enemy.kind === 'eater') {
+      if (enemy.kind === 'eater' || enemy.kind === 'warden') {
         if (Math.abs(distance) < 480) enemy.alert = 1;
-        if (enemy.attackTimer < 0) { enemy.attackWindup = .62; enemy.attackTimer = 2.5; this.toast = 'THE EATER STIRS'; this.toastTimer = .8; this.audio.boss(); }
-        if (enemy.attackWindup <= 0 && enemy.attackTimer > 2.35 && Math.abs(distance) < 540) this.hurtPlayer(1, Math.sign(distance));
+        const isWarden = enemy.kind === 'warden';
+        if (enemy.attackTimer < 0) {
+          enemy.attackWindup = isWarden ? .78 : .62;
+          enemy.attackTimer = isWarden ? 2.15 : 2.5;
+          this.toast = isWarden ? 'THE BELL WARDEN TURNS' : 'THE EATER STIRS';
+          this.toastTimer = .8; this.audio.boss();
+        }
+        if (enemy.attackWindup <= 0 && enemy.attackTimer > (isWarden ? 1.2 : 2.35) && Math.abs(distance) < (isWarden ? 600 : 540)) {
+          this.hurtPlayer(1, Math.sign(distance) || 1);
+        }
         enemy.vulnerable = p.burstTimer > 0 || enemy.attackWindup > .08;
-        enemy.vx = lerp(enemy.vx, clamp(distance * .42, -112, 112), dt * 1.6);
+        enemy.vx = lerp(enemy.vx, clamp(distance * (isWarden ? .55 : .42), -130, 130), dt * 1.6);
       } else if (enemy.kind === 'watcher') {
         enemy.vx = lerp(enemy.vx, 0, dt * 4);
         if (enemy.attackTimer < 0 && Math.abs(distance) < 440) { enemy.attackTimer = 2.6; enemy.attackWindup = .65; this.toast = 'A WATCHER TURNS'; this.toastTimer = .65; }
@@ -299,17 +316,22 @@ export class FlikkerEngine {
     const hitbox = { x: p.facing > 0 ? p.x + 12 : p.x - 58, y: p.y + 5, w: 72, h: 50 };
     for (const enemy of this.enemies) {
       if (enemy.dead || !overlaps(hitbox, enemy)) continue;
-      if (enemy.kind === 'eater' && !enemy.vulnerable) continue;
+      if ((enemy.kind === 'eater' || enemy.kind === 'warden') && !enemy.vulnerable) continue;
       enemy.hp -= 1; enemy.hitFlash = .2; enemy.vx = p.facing * 330; enemy.vy = -245;
       this.hitStop = .09; this.camera.shake = this.settings.screenShake ? .3 : 0; this.audio.hit();
-      this.addSparks(enemy.x + enemy.w / 2, enemy.y + enemy.h / 2, enemy.kind === 'eater' ? '#cce7db' : '#e4c279', 13);
-      if (enemy.hp <= 0) { enemy.dead = true; this.addBurst(enemy.x + enemy.w / 2, enemy.y + enemy.h / 2); this.toast = enemy.kind === 'eater' ? 'THE HUNGER BREAKS' : 'THE DARK LETS GO'; this.toastTimer = 1.7; }
+      this.addSparks(enemy.x + enemy.w / 2, enemy.y + enemy.h / 2, enemy.kind === 'eater' || enemy.kind === 'warden' ? '#cce7db' : '#e4c279', 13);
+      if (enemy.hp <= 0) {
+        enemy.dead = true; this.addBurst(enemy.x + enemy.w / 2, enemy.y + enemy.h / 2);
+        this.toast = enemy.kind === 'eater' ? 'THE HUNGER BREAKS' : enemy.kind === 'warden' ? 'THE BELL GOES SILENT' : 'THE DARK LETS GO';
+        this.toastTimer = 1.7;
+      }
     }
   }
   private flashEnemies() {
     for (const enemy of this.enemies) {
       if (!enemy.dead && Math.hypot(this.player.x - enemy.x, this.player.y - enemy.y) < 320) {
-        enemy.alert = 1; enemy.vulnerable = true; if (enemy.kind === 'eater') enemy.attackWindup = .01;
+         enemy.alert = 1; enemy.vulnerable = true;
+         if (enemy.kind === 'eater' || enemy.kind === 'warden') enemy.attackWindup = .01;
       }
     }
   }
@@ -318,7 +340,7 @@ export class FlikkerEngine {
     return y;
   }
   private ghostState() {
-    const anchors = [340, 980, 1920, 2880, 4110, 4980];
+    const anchors = [340, 980, 1920, 2880, 3740, 4780, 5850, 7040];
     let index = 0;
     for (let i = 0; i < anchors.length; i += 1) if (this.player.x > anchors[i] - 180) index = i;
     const x = anchors[index];
@@ -420,15 +442,28 @@ export class FlikkerEngine {
     if (area === 'SHIFTING HALL') {
       for (let x = 1720; x < 2940; x += 210) { ctx.fillStyle = '#26302f'; ctx.fillRect(x, 390, 25, 270); ctx.fillRect(x + 125, 430, 19, 230); ctx.strokeStyle = 'rgba(169,148,104,.18)'; ctx.strokeRect(x + 26, 455, 98, 68); }
     }
-    if (area === 'THE WILDERNESS') {
+    if (area === 'THE SUNKEN GARDEN') {
       ctx.strokeStyle = 'rgba(79,108,82,.55)'; ctx.lineWidth = 4;
       for (let x = 3080; x < 3910; x += 88) { ctx.beginPath(); ctx.moveTo(x, 700); ctx.bezierCurveTo(x - 12, 622, x + 30, 574, x + 11, 510); ctx.stroke(); }
       ctx.fillStyle = 'rgba(68,88,67,.3)'; for (let x = 3110; x < 3900; x += 130) ctx.fillRect(x, 450 + (x % 80), 9, 208);
     }
-    if (area === 'THE DESCENT' || area === 'EATER ARENA') {
+    if (area === 'THE CHAPEL' || area === 'THE DESCENT' || area === 'BELL CHAMBER' || area === 'EATER ARENA') {
       ctx.fillStyle = '#192229'; ctx.fillRect(4300, 290, 18, 360); ctx.fillRect(4660, 250, 20, 400);
       this.arch(ctx, 4840, 665, 230, 375, 'rgba(105,132,126,.32)');
       ctx.strokeStyle = 'rgba(208,181,115,.22)'; ctx.lineWidth = 2; for (let x = 5200; x < 6100; x += 120) { ctx.beginPath(); ctx.arc(x, 650, 15, Math.PI, Math.PI * 2); ctx.stroke(); }
+    }
+    if (area === 'THE CHAPEL' || area === 'BELL CHAMBER') {
+      ctx.fillStyle = 'rgba(49,61,58,.7)';
+      for (let x = 3420; x < 4330; x += 220) {
+        ctx.fillRect(x, 300, 26, 365);
+        ctx.fillRect(x + 118, 350, 18, 315);
+        ctx.strokeStyle = 'rgba(178,151,99,.25)';
+        ctx.strokeRect(x + 28, 430, 88, 74);
+      }
+      ctx.strokeStyle = 'rgba(208,181,115,.36)'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(5800, 230); ctx.lineTo(5800, 520); ctx.stroke();
+      ctx.beginPath(); ctx.arc(5800, 545, 56, Math.PI, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = 'rgba(213,178,101,.18)'; ctx.beginPath(); ctx.arc(5800, 560, 34, 0, Math.PI * 2); ctx.fill();
     }
   }
   private drawGhost(ctx: CanvasRenderingContext2D) {
@@ -475,7 +510,17 @@ export class FlikkerEngine {
     const cx = enemy.x + enemy.w / 2; const cy = enemy.y + enemy.h / 2; const facing = enemy.facing ?? (enemy.vx < 0 ? -1 : 1);
     ctx.save(); ctx.translate(cx, cy); ctx.scale(facing, 1);
     const hit = enemy.hitFlash > 0; const pulse = Math.sin(this.time * 5 + (enemy.phase ?? 0)) * 2;
-    if (enemy.kind === 'eater') {
+    if (enemy.kind === 'warden') {
+      ctx.fillStyle = hit ? '#e5dbc0' : '#273b3c';
+      ctx.beginPath(); ctx.moveTo(-45, 68); ctx.lineTo(-39, -42); ctx.quadraticCurveTo(0, -73, 39, -42); ctx.lineTo(45, 68); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#10191e'; ctx.beginPath(); ctx.ellipse(0, -28, 28, 25, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#d5b671'; ctx.fillRect(-13, -31, 8, 4); ctx.fillRect(6, -31, 8, 4);
+      ctx.strokeStyle = enemy.attackWindup > .05 ? 'rgba(234,151,92,.9)' : 'rgba(130,172,160,.55)'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(-31, -3); ctx.lineTo(-58, 32); ctx.moveTo(31, -3); ctx.lineTo(58, 32); ctx.stroke();
+      ctx.strokeStyle = 'rgba(218,188,119,.45)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, -14, 64 + pulse, Math.PI * .08, Math.PI * .92); ctx.stroke();
+      ctx.fillStyle = 'rgba(214,196,137,.28)'; ctx.fillRect(-5, 16, 10, 54);
+      if (enemy.vulnerable) { ctx.strokeStyle = 'rgba(218,243,221,.78)'; ctx.setLineDash([4, 5]); ctx.beginPath(); ctx.arc(0, -16, 75, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); }
+    } else if (enemy.kind === 'eater') {
       ctx.fillStyle = hit ? '#d6e4d7' : '#1a2930'; ctx.beginPath(); ctx.moveTo(-58, 69); ctx.quadraticCurveTo(-69, -36, -35, -73); ctx.quadraticCurveTo(0, -99, 38, -70); ctx.quadraticCurveTo(69, -28, 57, 69); ctx.closePath(); ctx.fill();
       ctx.fillStyle = '#080f16'; ctx.beginPath(); ctx.ellipse(0, -35, 37, 29, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#cce5d6'; ctx.beginPath(); ctx.arc(0, -36, 6 + pulse * .3, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = enemy.attackWindup > .05 ? 'rgba(229,190,116,.9)' : 'rgba(132,164,156,.42)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, -20, 82 + pulse, Math.PI * .12, Math.PI * .88); ctx.stroke();

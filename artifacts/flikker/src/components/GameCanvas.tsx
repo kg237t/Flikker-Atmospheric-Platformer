@@ -219,7 +219,12 @@ export default function GameCanvas() {
           </div>
           {storyActive && <div className="story-card" data-testid="story-card"><div className="story-rule" /><p>{snapshot.storyKicker}</p><strong>{snapshot.storyLine}</strong></div>}
           {snapshot.toast && <div className="toast-line" data-testid="text-toast">{snapshot.toast}</div>}
-          {snapshot.bossMaxHealth > 0 && snapshot.area === 'EATER ARENA' && snapshot.bossHealth > 0 && <div className="boss-meter"><div className="boss-name"><span>THE DEEP</span> Lantern Eater</div><div className="boss-track"><div className="boss-fill" style={{ width: `${(snapshot.bossHealth / snapshot.bossMaxHealth) * 100}%` }} /></div></div>}
+          {snapshot.bossMaxHealth > 0 && snapshot.bossHealth > 0 && (snapshot.area === 'THE CHAPEL' || snapshot.area === 'BELL CHAMBER' || snapshot.area === 'EATER ARENA') && (
+            <div className="boss-meter">
+              <div className="boss-name"><span>{snapshot.area === 'EATER ARENA' ? 'THE DEEP' : 'THE CHAPEL'}</span>{snapshot.area === 'EATER ARENA' ? 'Lantern Eater' : 'Bell Warden'}</div>
+              <div className="boss-track"><div className="boss-fill" style={{ width: `${(snapshot.bossHealth / snapshot.bossMaxHealth) * 100}%` }} /></div>
+            </div>
+          )}
           <div className="hud-hint"><kbd>A</kbd><kbd>D</kbd> move <i /> <kbd>SPACE</kbd> jump <i /> <kbd>SHIFT</kbd> dash <i /> <kbd>J</kbd> strike <i /> <kbd>K</kbd> flare</div>
           {settings.touchControls && <TouchControls engine={engineRef.current} />}
         </div>
