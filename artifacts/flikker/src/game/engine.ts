@@ -470,15 +470,33 @@ export class FlikkerEngine {
     const state = this.ghostState();
     if (!state.visible) return;
     const gx = state.x; const gy = state.y + Math.sin(this.time * 1.5) * 5;
-    ctx.save(); ctx.globalCompositeOperation = 'screen';
-    const halo = ctx.createRadialGradient(gx, gy, 3, gx, gy, 66); halo.addColorStop(0, 'rgba(203,239,221,.2)'); halo.addColorStop(1, 'rgba(203,239,221,0)');
-    ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(gx, gy, 66, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = 'rgba(186,228,211,.32)'; ctx.lineWidth = 2; ctx.beginPath();
-    for (let i = 0; i < 4; i += 1) { const y = gy + 18 + i * 8; ctx.moveTo(gx - 27, y); ctx.bezierCurveTo(gx - 9, y + 10, gx + 10, y - 8, gx + 31, y + 2); } ctx.stroke();
-    ctx.fillStyle = 'rgba(213,242,222,.9)'; ctx.beginPath(); ctx.arc(gx, gy - 19, 7, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = 'rgba(183,221,208,.48)'; ctx.beginPath(); ctx.moveTo(gx - 21, gy - 10); ctx.quadraticCurveTo(gx, gy + 28, gx + 22, gy - 10); ctx.quadraticCurveTo(gx, gy + 4, gx - 21, gy - 10); ctx.fill();
-    if (this.ghostGesture === 'point' || this.ghostGesture === 'wait') {
-      ctx.strokeStyle = 'rgba(213,242,222,.65)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(gx + 10, gy - 6); ctx.lineTo(gx + (this.ghostGesture === 'point' ? 34 : 20), gy - 25); ctx.stroke();
+    const breath = Math.sin(this.time * 2.2) * 1.5;
+    ctx.save(); ctx.translate(gx, gy); ctx.globalCompositeOperation = 'screen';
+    const halo = ctx.createRadialGradient(0, -14, 3, 0, -14, 88);
+    halo.addColorStop(0, 'rgba(213,255,233,.25)'); halo.addColorStop(.42, 'rgba(142,215,195,.08)'); halo.addColorStop(1, 'rgba(142,215,195,0)');
+    ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(0, -14, 88, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = .18; ctx.strokeStyle = '#d4f5de'; ctx.lineWidth = 1;
+    for (let i = 0; i < 5; i += 1) {
+      ctx.beginPath(); ctx.arc(0, -17, 40 + i * 8 + breath, Math.PI * .1, Math.PI * .9); ctx.stroke();
+    }
+    ctx.globalAlpha = .92;
+    const robe = ctx.createLinearGradient(0, -18, 0, 47);
+    robe.addColorStop(0, '#d5f1df'); robe.addColorStop(.4, '#93c9b5'); robe.addColorStop(1, 'rgba(77,139,126,.08)');
+    ctx.fillStyle = robe; ctx.beginPath();
+    ctx.moveTo(-23, -7); ctx.quadraticCurveTo(-18, -24, 0, -27); ctx.quadraticCurveTo(18, -24, 23, -7);
+    ctx.lineTo(32, 35); ctx.quadraticCurveTo(18, 28, 9, 45); ctx.quadraticCurveTo(0, 29, -9, 45);
+    ctx.quadraticCurveTo(-18, 28, -32, 35); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(215,250,229,.84)'; ctx.beginPath(); ctx.arc(0, -27, 12, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(25,64,61,.75)'; ctx.beginPath(); ctx.ellipse(0, -25, 7, 5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ecffe9'; ctx.beginPath(); ctx.arc(-3, -26, 1.4, 0, Math.PI * 2); ctx.arc(3, -26, 1.4, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(221,252,229,.8)'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(-15, -2); ctx.quadraticCurveTo(-30, 5, -38, 18); ctx.moveTo(15, -2); ctx.quadraticCurveTo(29, 3, 38, 15); ctx.stroke();
+    ctx.lineCap = 'butt';
+    if (this.ghostGesture === 'point') {
+      ctx.strokeStyle = '#e5ffe7'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(17, 0); ctx.lineTo(45, -24); ctx.stroke();
+      ctx.fillStyle = '#e5ffe7'; ctx.beginPath(); ctx.moveTo(48, -28); ctx.lineTo(40, -25); ctx.lineTo(45, -19); ctx.closePath(); ctx.fill();
+    } else if (this.ghostGesture === 'wait') {
+      ctx.strokeStyle = 'rgba(229,255,231,.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, -7, 34 + Math.sin(this.time * 3) * 2, 0, Math.PI * 2); ctx.stroke();
     }
     ctx.restore();
   }
@@ -510,50 +528,92 @@ export class FlikkerEngine {
     const cx = enemy.x + enemy.w / 2; const cy = enemy.y + enemy.h / 2; const facing = enemy.facing ?? (enemy.vx < 0 ? -1 : 1);
     ctx.save(); ctx.translate(cx, cy); ctx.scale(facing, 1);
     const hit = enemy.hitFlash > 0; const pulse = Math.sin(this.time * 5 + (enemy.phase ?? 0)) * 2;
+    const ember = enemy.attackWindup > .05;
+    const body = (top: string, bottom: string) => {
+      const gradient = ctx.createLinearGradient(0, -enemy.h * .6, 0, enemy.h * .55);
+      gradient.addColorStop(0, top); gradient.addColorStop(1, bottom); return gradient;
+    };
     if (enemy.kind === 'warden') {
-      ctx.fillStyle = hit ? '#e5dbc0' : '#273b3c';
-      ctx.beginPath(); ctx.moveTo(-45, 68); ctx.lineTo(-39, -42); ctx.quadraticCurveTo(0, -73, 39, -42); ctx.lineTo(45, 68); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = '#10191e'; ctx.beginPath(); ctx.ellipse(0, -28, 28, 25, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#d5b671'; ctx.fillRect(-13, -31, 8, 4); ctx.fillRect(6, -31, 8, 4);
-      ctx.strokeStyle = enemy.attackWindup > .05 ? 'rgba(234,151,92,.9)' : 'rgba(130,172,160,.55)'; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.moveTo(-31, -3); ctx.lineTo(-58, 32); ctx.moveTo(31, -3); ctx.lineTo(58, 32); ctx.stroke();
-      ctx.strokeStyle = 'rgba(218,188,119,.45)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, -14, 64 + pulse, Math.PI * .08, Math.PI * .92); ctx.stroke();
-      ctx.fillStyle = 'rgba(214,196,137,.28)'; ctx.fillRect(-5, 16, 10, 54);
-      if (enemy.vulnerable) { ctx.strokeStyle = 'rgba(218,243,221,.78)'; ctx.setLineDash([4, 5]); ctx.beginPath(); ctx.arc(0, -16, 75, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); }
+      ctx.fillStyle = 'rgba(220,193,111,.11)'; ctx.beginPath(); ctx.arc(0, -26, 92 + pulse, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = hit ? '#ecdfbd' : body('#516767', '#182a30');
+      ctx.beginPath(); ctx.moveTo(-45, 67); ctx.lineTo(-39, -33); ctx.quadraticCurveTo(-30, -70, 0, -78); ctx.quadraticCurveTo(30, -70, 39, -33); ctx.lineTo(45, 67); ctx.lineTo(27, 58); ctx.lineTo(0, 75); ctx.lineTo(-27, 58); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#111b20'; ctx.beginPath(); ctx.ellipse(0, -39, 29, 25, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#a3af91'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, -39, 25, Math.PI * 1.05, Math.PI * 1.95); ctx.stroke();
+      ctx.fillStyle = ember ? '#ef9e62' : '#dbce8e'; ctx.beginPath(); ctx.ellipse(-11, -38, 5, 3, 0, 0, Math.PI * 2); ctx.ellipse(11, -38, 5, 3, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = ember ? '#ee9864' : '#c6aa68'; ctx.lineWidth = 4; ctx.beginPath();
+      ctx.moveTo(-30, -17); ctx.lineTo(-62, 35); ctx.moveTo(30, -17); ctx.lineTo(62, 35); ctx.stroke();
+      ctx.strokeStyle = '#d8c27c'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, -72, 29, Math.PI, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = 'rgba(224,195,123,.56)'; ctx.fillRect(-6, 9, 12, 58);
+      ctx.strokeStyle = 'rgba(218,243,221,.8)'; ctx.lineWidth = 2; ctx.setLineDash([5, 6]);
+      if (enemy.vulnerable) { ctx.beginPath(); ctx.arc(0, -22, 78 + pulse, 0, Math.PI * 2); ctx.stroke(); } ctx.setLineDash([]);
     } else if (enemy.kind === 'eater') {
-      ctx.fillStyle = hit ? '#d6e4d7' : '#1a2930'; ctx.beginPath(); ctx.moveTo(-58, 69); ctx.quadraticCurveTo(-69, -36, -35, -73); ctx.quadraticCurveTo(0, -99, 38, -70); ctx.quadraticCurveTo(69, -28, 57, 69); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = '#080f16'; ctx.beginPath(); ctx.ellipse(0, -35, 37, 29, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#cce5d6'; ctx.beginPath(); ctx.arc(0, -36, 6 + pulse * .3, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = enemy.attackWindup > .05 ? 'rgba(229,190,116,.9)' : 'rgba(132,164,156,.42)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, -20, 82 + pulse, Math.PI * .12, Math.PI * .88); ctx.stroke();
-      if (enemy.vulnerable) { ctx.strokeStyle = 'rgba(224,239,204,.78)'; ctx.setLineDash([4, 5]); ctx.beginPath(); ctx.arc(0, -22, 93, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); }
+      ctx.fillStyle = 'rgba(214,177,92,.1)'; ctx.beginPath(); ctx.arc(0, -26, 118 + pulse, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = hit ? '#e1eee0' : body('#354b4b', '#101c26');
+      ctx.beginPath(); ctx.moveTo(-58, 71); ctx.quadraticCurveTo(-75, 14, -61, -49); ctx.quadraticCurveTo(-46, -91, 0, -100); ctx.quadraticCurveTo(46, -91, 61, -49); ctx.quadraticCurveTo(75, 14, 58, 71); ctx.lineTo(27, 58); ctx.lineTo(0, 78); ctx.lineTo(-27, 58); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = 'rgba(174,205,190,.32)'; ctx.lineWidth = 3;
+      for (let i = -2; i <= 2; i += 1) { ctx.beginPath(); ctx.moveTo(i * 18, -64); ctx.quadraticCurveTo(i * 24, -4, i * 17, 52); ctx.stroke(); }
+      ctx.fillStyle = '#080e14'; ctx.beginPath(); ctx.ellipse(0, -34, 41, 31 + Math.sin(this.time * 3) * 3, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = ember ? '#ef9d62' : '#cfe8d4'; ctx.beginPath(); ctx.arc(0, -35, 7 + pulse * .35, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#d4b46d'; ctx.beginPath(); ctx.moveTo(-30, -5); ctx.lineTo(-18, 15); ctx.lineTo(-7, -4); ctx.lineTo(7, 17); ctx.lineTo(19, -4); ctx.lineTo(31, -6); ctx.lineTo(22, 11); ctx.lineTo(0, 26); ctx.lineTo(-22, 11); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = ember ? '#ef9965' : 'rgba(200,230,210,.52)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, -18, 84 + pulse, Math.PI * .12, Math.PI * .88); ctx.stroke();
+      if (enemy.vulnerable) { ctx.strokeStyle = 'rgba(224,239,204,.8)'; ctx.setLineDash([5, 7]); ctx.beginPath(); ctx.arc(0, -22, 102, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); }
     } else if (enemy.kind === 'watcher') {
-      ctx.fillStyle = hit ? '#e1d6b2' : '#334148'; ctx.beginPath(); ctx.moveTo(-24, 31); ctx.lineTo(-19, -23); ctx.quadraticCurveTo(0, -41, 20, -23); ctx.lineTo(27, 31); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = '#090f15'; ctx.beginPath(); ctx.ellipse(0, -13, 18, 13, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = enemy.attackWindup > .05 ? '#e0a05c' : '#d2c47a'; ctx.beginPath(); ctx.arc(0, -13, 4 + pulse * .2, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = '#72847c'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-19, 30); ctx.lineTo(-32, 46); ctx.moveTo(19, 30); ctx.lineTo(32, 46); ctx.stroke();
-      if (enemy.attackWindup > .05) { ctx.strokeStyle = 'rgba(225,164,91,.7)'; ctx.beginPath(); ctx.arc(0, -11, 34 + pulse, 0, Math.PI * 2); ctx.stroke(); }
+      ctx.fillStyle = 'rgba(180,204,177,.12)'; ctx.beginPath(); ctx.arc(0, -14, 53 + pulse, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = hit ? '#e9dbb4' : body('#56686a', '#1e2c35');
+      ctx.beginPath(); ctx.moveTo(-27, 33); ctx.lineTo(-24, -13); ctx.quadraticCurveTo(-20, -39, 0, -47); ctx.quadraticCurveTo(20, -39, 24, -13); ctx.lineTo(28, 33); ctx.lineTo(0, 23); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#080f15'; ctx.beginPath(); ctx.ellipse(0, -17, 19, 15, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = ember ? '#ef9f63' : '#dfd07f'; ctx.beginPath(); ctx.arc(0, -17, 5 + pulse * .18, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#f5e8a1'; ctx.beginPath(); ctx.arc(-1, -18, 1.8, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#94a89a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-21, 25); ctx.lineTo(-38, 45); ctx.moveTo(21, 25); ctx.lineTo(38, 45); ctx.stroke();
+      ctx.strokeStyle = 'rgba(226,174,91,.7)'; if (ember) { ctx.beginPath(); ctx.arc(0, -17, 38 + pulse, 0, Math.PI * 2); ctx.stroke(); }
     } else if (enemy.kind === 'skitter') {
-      ctx.fillStyle = hit ? '#dedab8' : '#27363a'; ctx.beginPath(); ctx.ellipse(0, 2, 27, 15, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#0c1418'; ctx.beginPath(); ctx.arc(13, -7, 11, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#d6b86f'; ctx.fillRect(16, -9, 4, 4);
-      ctx.strokeStyle = '#51655f'; ctx.lineWidth = 3; for (let i = -1; i <= 1; i += 1) { ctx.beginPath(); ctx.moveTo(i * 12, 9); ctx.lineTo(i * 22, 24 + Math.sin(this.time * 8 + i) * 3); ctx.stroke(); }
-      if (enemy.attackWindup > .05) { ctx.strokeStyle = 'rgba(224,171,89,.7)'; ctx.beginPath(); ctx.arc(0, 0, 37, 0, Math.PI * 2); ctx.stroke(); }
+      ctx.fillStyle = 'rgba(182,206,179,.1)'; ctx.beginPath(); ctx.ellipse(0, 4, 47, 29, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = hit ? '#e4dcb6' : body('#526765', '#1a2a31');
+      ctx.beginPath(); ctx.ellipse(0, 0, 29, 18, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#91a88e'; ctx.lineWidth = 2; for (let i = -1; i <= 1; i += 1) { ctx.beginPath(); ctx.moveTo(i * 12, -14); ctx.lineTo(i * 16, 14); ctx.stroke(); }
+      ctx.fillStyle = '#0a1217'; ctx.beginPath(); ctx.ellipse(18, -7, 13, 10, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = ember ? '#ed9a5f' : '#d8c06d'; ctx.beginPath(); ctx.arc(22, -8, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#678078'; ctx.lineWidth = 3; for (let i = -1; i <= 1; i += 1) { const step = Math.sin(this.time * 9 + i) * 4; ctx.beginPath(); ctx.moveTo(i * 15, 9); ctx.lineTo(i * 26, 25 + step); ctx.lineTo(i * 32, 17 + step); ctx.stroke(); }
+      ctx.strokeStyle = '#9aa98c'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(30, -4); ctx.lineTo(42, -12); ctx.moveTo(30, 1); ctx.lineTo(44, 5); ctx.stroke();
+      if (ember) { ctx.strokeStyle = 'rgba(224,171,89,.8)'; ctx.beginPath(); ctx.arc(0, 0, 39, 0, Math.PI * 2); ctx.stroke(); }
     } else {
-      ctx.fillStyle = hit ? '#dbd8bc' : '#26343a'; ctx.beginPath(); ctx.moveTo(-17, 28); ctx.quadraticCurveTo(-26, -8, -15, -28); ctx.quadraticCurveTo(0, -41, 15, -28); ctx.quadraticCurveTo(25, -6, 18, 28); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = '#080f15'; ctx.beginPath(); ctx.arc(0, -18, 11, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#d4be79'; ctx.fillRect(2, -20, 3, 5);
-      ctx.strokeStyle = enemy.attackWindup > .05 ? '#dc9660' : '#667870'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-17, 25); ctx.lineTo(-29, 39); ctx.moveTo(17, 25); ctx.lineTo(29, 39); ctx.stroke();
+      ctx.fillStyle = 'rgba(155,190,165,.1)'; ctx.beginPath(); ctx.arc(0, -12, 42 + pulse, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = hit ? '#e5dcb9' : body('#526263', '#1c2b32');
+      ctx.beginPath(); ctx.moveTo(-19, 31); ctx.quadraticCurveTo(-30, 7, -24, -19); ctx.quadraticCurveTo(-18, -43, 0, -47); ctx.quadraticCurveTo(18, -43, 24, -19); ctx.quadraticCurveTo(30, 7, 19, 31); ctx.lineTo(0, 24); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#080f15'; ctx.beginPath(); ctx.ellipse(0, -22, 13, 15, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = ember ? '#ee9860' : '#d7c47e'; ctx.fillRect(4, -25, 4, 7);
+      ctx.strokeStyle = ember ? '#df9864' : '#84948a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-18, 25); ctx.lineTo(-32, 43); ctx.moveTo(18, 25); ctx.lineTo(32, 43); ctx.stroke();
+      ctx.strokeStyle = 'rgba(153,179,160,.55)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-11, -3); ctx.lineTo(-17, 19); ctx.moveTo(0, -1); ctx.lineTo(0, 20); ctx.moveTo(11, -3); ctx.lineTo(17, 19); ctx.stroke();
     }
     ctx.restore();
-    if (enemy.hp < enemy.maxHp && enemy.kind !== 'eater') { ctx.fillStyle = 'rgba(10,16,20,.7)'; ctx.fillRect(enemy.x, enemy.y - 10, enemy.w, 3); ctx.fillStyle = '#bca96e'; ctx.fillRect(enemy.x, enemy.y - 10, enemy.w * enemy.hp / enemy.maxHp, 3); }
+    if (enemy.hp < enemy.maxHp && enemy.kind !== 'eater') {
+      ctx.fillStyle = 'rgba(10,16,20,.78)'; ctx.fillRect(enemy.x - 2, enemy.y - 12, enemy.w + 4, 5);
+      ctx.fillStyle = enemy.kind === 'warden' ? '#dbc077' : '#bca96e'; ctx.fillRect(enemy.x, enemy.y - 11, enemy.w * enemy.hp / enemy.maxHp, 3);
+    }
   }
   private drawPlayer(ctx: CanvasRenderingContext2D) {
     const p = this.player; const run = Math.sin((p.runTime ?? 0)) * (Math.abs(p.vx) > 30 && p.grounded ? 1 : 0); const squash = p.landTimer && p.landTimer > 0 ? 1 - p.landTimer * .5 : 1;
     ctx.save(); ctx.translate(p.x + p.w / 2, p.y + p.h / 2); ctx.scale(p.facing, 1); ctx.scale(1 + (1 - squash) * .4, squash);
     if (p.invuln > 0 && Math.floor(this.time * 18) % 2 === 0) ctx.globalAlpha = .52;
-    ctx.fillStyle = '#0e1922'; ctx.beginPath(); ctx.moveTo(-18, 28); ctx.quadraticCurveTo(-27, 4 + run * 4, -18, -15); ctx.quadraticCurveTo(-13, -34, 0, -35); ctx.quadraticCurveTo(19, -31, 20, -8); ctx.lineTo(14, 29); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = '#34434a'; ctx.beginPath(); ctx.arc(1, -25, 12, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#d7c69c'; ctx.beginPath(); ctx.arc(7, -25, 3, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#101a21'; ctx.beginPath(); ctx.moveTo(-13, -30); ctx.quadraticCurveTo(0, -48, 16, -32); ctx.lineTo(11, -26); ctx.lineTo(-13, -27); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = '#68766f'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-8, -5); ctx.lineTo(-15 + run * 4, 31); ctx.moveTo(9, -5); ctx.lineTo(16 - run * 4, 31); ctx.stroke();
-    ctx.fillStyle = '#d9ac58'; ctx.beginPath(); ctx.arc(18, 5, 5 + (p.burstTimer > 0 ? 3 : 0), 0, Math.PI * 2); ctx.fill();
-    const weaponAngle = p.attackTimer > 0 ? -.82 : .22 + run * .12; ctx.save(); ctx.translate(19, -4); ctx.rotate(weaponAngle); ctx.strokeStyle = '#aa9b76'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(20, 18); ctx.stroke(); ctx.fillStyle = '#d9e0d4'; ctx.beginPath(); ctx.moveTo(17, 14); ctx.lineTo(31, 18); ctx.lineTo(21, 23); ctx.closePath(); ctx.fill(); ctx.restore();
-    if (p.attackTimer > 0) { ctx.strokeStyle = '#ead092'; ctx.lineWidth = 3; ctx.globalAlpha = .85; ctx.beginPath(); ctx.arc(18, 5, 34, -.98, .65); ctx.stroke(); }
+    const runLift = run * 2;
+    ctx.fillStyle = 'rgba(209,166,80,.12)'; ctx.beginPath(); ctx.arc(18, 2, 34 + (p.burstTimer > 0 ? 12 : 0), 0, Math.PI * 2); ctx.fill();
+    const cloak = ctx.createLinearGradient(-20, -38, 18, 34); cloak.addColorStop(0, '#324854'); cloak.addColorStop(.48, '#182934'); cloak.addColorStop(1, '#0a151e');
+    ctx.fillStyle = cloak; ctx.beginPath(); ctx.moveTo(-18, 31); ctx.quadraticCurveTo(-30, 10 + runLift, -22, -13); ctx.quadraticCurveTo(-17, -34, 0, -38); ctx.quadraticCurveTo(21, -34, 23, -8); ctx.lineTo(18, 32); ctx.lineTo(8, 25); ctx.lineTo(0, 35); ctx.lineTo(-8, 25); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(116,145,143,.7)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(-16, -2); ctx.quadraticCurveTo(-5, 7, -7, 27); ctx.moveTo(0, -5); ctx.lineTo(0, 29); ctx.moveTo(15, -1); ctx.quadraticCurveTo(6, 7, 8, 27); ctx.stroke();
+    ctx.fillStyle = '#9bafaa'; ctx.beginPath(); ctx.arc(1, -26, 13, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#d6c39b'; ctx.beginPath(); ctx.arc(6, -27, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#111c25'; ctx.beginPath(); ctx.moveTo(-15, -29); ctx.quadraticCurveTo(0, -49, 18, -32); ctx.lineTo(11, -25); ctx.lineTo(-15, -26); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#758c87'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-8, -4); ctx.lineTo(-15 + run * 5, 31); ctx.moveTo(8, -4); ctx.lineTo(16 - run * 5, 31); ctx.stroke();
+    ctx.fillStyle = '#e1b95f'; ctx.beginPath(); ctx.arc(19, 4, 6 + (p.burstTimer > 0 ? 4 : 0), 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,228,148,.35)'; ctx.beginPath(); ctx.arc(19, 4, 12 + (p.burstTimer > 0 ? 8 : 0), 0, Math.PI * 2); ctx.fill();
+    const weaponAngle = p.attackTimer > 0 ? -.92 : .22 + run * .12; ctx.save(); ctx.translate(19, -4); ctx.rotate(weaponAngle);
+    ctx.strokeStyle = '#a58d65'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-3, 0); ctx.lineTo(27, 20); ctx.stroke();
+    ctx.strokeStyle = '#d8e4d8'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(19, 14); ctx.lineTo(35, 18); ctx.stroke();
+    ctx.fillStyle = '#e6eee2'; ctx.beginPath(); ctx.moveTo(28, 16); ctx.lineTo(38, 18); ctx.lineTo(28, 24); ctx.closePath(); ctx.fill(); ctx.restore();
+    if (p.attackTimer > 0) {
+      ctx.strokeStyle = '#f0d58b'; ctx.lineWidth = 4; ctx.globalAlpha = .9; ctx.beginPath(); ctx.arc(19, 4, 39, -1.08, .66); ctx.stroke();
+      ctx.strokeStyle = 'rgba(214,245,222,.6)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(19, 4, 45, -1.02, .45); ctx.stroke();
+    }
     ctx.restore();
   }
   private drawFog(ctx: CanvasRenderingContext2D) {
