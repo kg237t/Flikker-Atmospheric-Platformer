@@ -1,5 +1,5 @@
 export type GameMode = 'title' | 'playing' | 'paused' | 'ending';
-export type AreaId = 'THE THRESHOLD' | 'THE HOLLOW' | 'SHIFTING HALL' | 'THE SUNKEN GARDEN' | 'THE CHAPEL' | 'THE DESCENT' | 'BELL CHAMBER' | 'EATER ARENA';
+export type AreaId = 'THE THRESHOLD' | 'THE HOLLOW' | 'SHIFTING HALL' | 'THE SUNKEN GARDEN' | 'THE CHAPEL' | 'THE DESCENT' | 'BELL CHAMBER' | 'THE ARCHIVE' | 'THE MIRROR WARD' | 'THE LAST VESTIBULE' | 'EATER ARENA';
 export type EnemyKind = 'hollow' | 'skitter' | 'watcher' | 'warden' | 'eater';
 
 export interface Vec2 { x: number; y: number }
