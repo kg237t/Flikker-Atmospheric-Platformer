@@ -3,7 +3,7 @@ import { FlikkerEngine } from '../game/engine';
 import type { GameSettings, GameSnapshot, InputState } from '../game/types';
 
 const defaultSettings: GameSettings = { reducedFlicker: false, screenShake: true, brightness: 1, volume: .42, touchControls: true };
-const loadSettings = (): GameSettings => { try { const s = localStorage.getItem('flikker-settings'); return s ? { ...defaultSettings, ...JSON.parse(s) } : defaultSettings; } catch { return defaultSettings; } };
+const loadSettings: () => GameSettings = () => { try { const s = localStorage.getItem('flikker-settings'); return s ? { ...defaultSettings, ...JSON.parse(s) } : defaultSettings; } catch { return defaultSettings; } };
 
 function TitleScreen({ onStart, onSettings }: { onStart: () => void; onSettings: () => void }) {
   return <section className="game-overlay title-screen" aria-label="Flikker title screen"><div className="title-vignette"/><div className="title-content">
@@ -79,7 +79,7 @@ export default function GameCanvas(){
     return()=>{clearInput();engine.destroy();engineRef.current=null;if(pumpRef.current!==null)cancelAnimationFrame(pumpRef.current);window.removeEventListener('keydown',keyDown);window.removeEventListener('keyup',keyUp);window.removeEventListener('blur',blur);document.removeEventListener('visibilitychange',visibility);canvasRef.current?.removeEventListener('mousedown',pointerDown);canvasRef.current?.removeEventListener('mouseup',pointerUp);canvasRef.current?.removeEventListener('contextmenu',contextMenu);};
   },[]);
   useEffect(()=>{engineRef.current?.setSettings(settings);try{localStorage.setItem('flikker-settings',JSON.stringify(settings));}catch{}},[settings]);
-  const begin=()=>{engineRef.current?.begin();setShowSettings(false);}; const restart=()=>{engineRef.current?.begin();setShowSettings(false);}; const togglePause=()=>{const e=engineRef.current;if(!e)return;e.setInput({left:false,right:false,jump:false,dash:false,attack:false,burst:false,special:false});e.setMode(snapshot.mode==='paused'?'playing':'paused');setSnapshot(e.getSnapshot());};
+  const resetInput=()=>{heldRef.current={left:false,right:false,jump:false};engineRef.current?.setInput({left:false,right:false,jump:false,dash:false,attack:false,burst:false,special:false});}; const begin=()=>{resetInput();engineRef.current?.begin();setShowSettings(false);}; const restart=()=>{resetInput();engineRef.current?.begin();setShowSettings(false);}; const togglePause=()=>{const e=engineRef.current;if(!e)return;e.setInput({left:false,right:false,jump:false,dash:false,attack:false,burst:false,special:false});e.setMode(snapshot.mode==='paused'?'playing':'paused');setSnapshot(e.getSnapshot());};
   const healthPercent=`${(snapshot.health/4)*100}%`; const lanternPercent=`${snapshot.lantern}%`; const storyActive=snapshot.storyTimer>0&&snapshot.storyLine; const showBoss=snapshot.bossMaxHealth>0&&snapshot.bossHealth>0&&(snapshot.area==='THE CHAPEL'||snapshot.area==='THE DESCENT'||snapshot.area==='EATER ARENA'); const bossName=snapshot.area==='EATER ARENA'?'Lantern Eater':'Bell Warden';
   return <main className="game-shell" style={{filter:`brightness(${settings.brightness})`}}><canvas className="game-canvas" ref={canvasRef} data-testid="game-canvas"/><div className="grain"/>
     {snapshot.mode==='title'&&!showSettings&&<TitleScreen onStart={begin} onSettings={()=>setShowSettings(true)}/>} {showSettings&&<SettingsPanel settings={settings} onChange={setSettings} onClose={()=>setShowSettings(false)}/>} 
