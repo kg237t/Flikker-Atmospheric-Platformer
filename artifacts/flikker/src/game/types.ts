@@ -36,7 +36,7 @@ export interface Enemy {
 export interface Platform { x: number; y: number; w: number; h: number; moss?: boolean; oneWay?: boolean; material?: 'stone' | 'wood' | 'water'; }
 export interface Checkpoint { x: number; y: number; area: AreaId; activated: boolean; }
 export interface GameSettings { reducedFlicker: boolean; screenShake: boolean; brightness: number; volume: number; touchControls: boolean; }
-export interface InputState { left: boolean; right: boolean; jump: boolean; dash: boolean; attack: boolean; burst: boolean; pause: boolean; }
+export interface InputState { left: boolean; right: boolean; jump: boolean; dash: boolean; attack: boolean; burst: boolean; pause: boolean; special: boolean; }
 export interface Player extends Vec2 {
   w: number;
   h: number;
