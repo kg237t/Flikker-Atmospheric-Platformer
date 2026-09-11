@@ -52,6 +52,8 @@ export interface Player extends Vec2 {
   attackCooldown: number;
   burstTimer: number;
   burstCooldown: number;
+  veilTimer: number;
+  veilCooldown: number;
   health: number;
   maxHealth: number;
   lantern: number;
