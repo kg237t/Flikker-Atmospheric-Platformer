@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { FlikkerEngine } from '../game/engine';
+import { characterScenes } from '../game/story';
 import type { GameSettings, GameSnapshot, InputState } from '../game/types';
 
 const defaultSettings: GameSettings = { reducedFlicker: false, screenShake: true, brightness: 1, volume: .42, touchControls: true };
@@ -8,9 +9,9 @@ const loadSettings: () => GameSettings = () => { try { const s = localStorage.ge
 function TitleScreen({ onStart, onSettings }: { onStart: () => void; onSettings: () => void }) {
   return <section className="game-overlay title-screen" aria-label="Flikker title screen"><div className="title-vignette"/><div className="title-content">
     <p className="eyebrow">a lantern remembers what people forget</p><h1 className="title-mark" data-testid="text-game-title">FLIKKER<span>the light remembers</span></h1>
-    <div className="title-ornament"><i/><b>+</b><i/></div><p className="title-copy">Wake beneath a drowned chapel. Carry its last light through a ruin that has learned to breathe.</p>
+    <div className="title-ornament"><i/><b>+</b><i/></div><p className="title-copy">Wake beneath a drowned chapel. Carry its last light through a ruin that remembers people better than they remember themselves.</p>
     <div className="title-actions"><button className="game-button" onClick={onStart} data-testid="button-begin">Begin descent <span>↳</span></button><button className="game-button ghost" onClick={onSettings}>Settings</button></div>
-    <p className="title-note">A/D or arrows move · Space jump · Shift dash · J / click strike · K / right click flare · E Lumen Step</p><p className="title-credit">FLIKKER / vertical slice 01</p>
+    <p className="title-note">A/D or arrows move · Space jump · Shift dash · J / click strike · K / right click flare · E Lumen Step</p><p className="title-credit">FLIKKER / THE LIGHT REMEMBERS</p>
   </div></section>;
 }
 
@@ -27,7 +28,7 @@ function SettingsPanel({ settings, onChange, onClose }: { settings: GameSettings
 function PausePanel({ onResume, onSettings, onRestart }: { onResume:()=>void; onSettings:()=>void; onRestart:()=>void }) {
   return <div className="game-overlay pause-wrap"><section className="pause-panel" aria-label="Paused"><p className="panel-kicker">the dark is patient</p><h2 className="panel-title">Paused</h2><p className="pause-copy">The ruin keeps its breath. Your lantern does not.</p><div className="panel-actions"><button className="game-button" onClick={onResume}>Return to ruin</button><button className="game-button ghost" onClick={onSettings}>Settings</button><button className="game-button ghost" onClick={onRestart}>Restart descent</button></div></section></div>;
 }
-function EndingPanel({ onRestart }: { onRestart:()=>void }) { return <div className="game-overlay ending-wrap"><section className="ending-panel" aria-label="Ending"><p className="panel-kicker">THE CHAPEL OPENS / A REVEAL</p><h2 className="panel-title">Mara was here.</h2><div className="ending-mark"><span/></div><p className="ending-copy">The Eater was not guarding the ruin. It was keeping the last lantern bearer from leaving it. In the ash beyond the chapel, a second flame answers yours.</p><p className="ending-epitaph">“If you find this, do not bring the light back.”</p><div className="panel-actions" style={{marginTop:'2rem'}}><button className="game-button" onClick={onRestart}>Walk again <span>↳</span></button></div></section></div>; }
+function EndingPanel({ onRestart }: { onRestart:()=>void }) { return <div className="game-overlay ending-wrap"><section className="ending-panel" aria-label="Ending"><p className="panel-kicker">THE LIGHT REMEMBERS / REVELATION</p><h2 className="panel-title">Mara was here.</h2><div className="ending-mark"><span/></div><p className="ending-copy">The Eater was not guarding the ruin. It was keeping its memories together. The names you heard were never separate stories; they were pieces of one person trying to remember why the lantern was passed on.</p><p className="ending-epitaph">“You did not find the last bearer. You became the one who remembers.”</p><div className="panel-actions" style={{marginTop:'2rem'}}><button className="game-button" onClick={onRestart}>Walk again <span>↳</span></button></div></section></div>; }
 
 const touchButtons: Array<{key:keyof InputState;label:string;className:string;testId:string}> = [
   {key:'left',label:'←',className:'touch-move touch-left',testId:'touch-left'},{key:'right',label:'→',className:'touch-move touch-right',testId:'touch-right'},
@@ -47,12 +48,12 @@ function TouchControls({engine}:{engine:FlikkerEngine|null}) {
 export default function GameCanvas(){
   const canvasRef=useRef<HTMLCanvasElement|null>(null); const engineRef=useRef<FlikkerEngine|null>(null); const heldRef=useRef({left:false,right:false,jump:false}); const pumpRef=useRef<number|null>(null); const gamepadRef=useRef({jump:false,dash:false,attack:false,burst:false,special:false});
   const [snapshot,setSnapshot]=useState<GameSnapshot>({mode:'title',area:'THE THRESHOLD',lantern:100,health:4,bossHealth:9,bossMaxHealth:9,checkpoint:0,toast:'The light remembers the way',storyKicker:'THE FIRST WAKING',storyLine:'The lantern is warm. Someone was holding it before you.',storyTimer:0,storyBeat:0,ghostVisible:false,ghostGesture:'wait',progress:0});
-  const [settings,setSettings]=useState<GameSettings>(loadSettings); const [showSettings,setShowSettings]=useState(false);
+  const [settings,setSettings]=useState<GameSettings>(loadSettings); const [showSettings,setShowSettings]=useState(false); const [characterScene,setCharacterScene]=useState<typeof characterScenes[keyof typeof characterScenes]>(undefined);
 
   useEffect(()=>{
     if(!canvasRef.current)return; const engine=new FlikkerEngine(canvasRef.current); engine.setSettings(settings); engine.onSnapshot=setSnapshot; engineRef.current=engine; engine.start();
     const clearInput=()=>{heldRef.current={left:false,right:false,jump:false};engine.setInput({left:false,right:false,jump:false,dash:false,attack:false,burst:false,special:false});gamepadRef.current={jump:false,dash:false,attack:false,burst:false,special:false};};
-    const begin=()=>{clearInput();engine.begin();setShowSettings(false);};
+    const begin=()=>{clearInput();engine.begin();setShowSettings(false);setSnapshot(engine.getSnapshot());};
     const keyDown=(e:KeyboardEvent)=>{
       const code=e.code; const movement=code==='KeyA'||code==='KeyD'||code==='ArrowLeft'||code==='ArrowRight'; const handled=movement||['Space','ShiftLeft','ShiftRight','KeyJ','KeyK','KeyE','Escape','Enter'].includes(code);
       if(handled)e.preventDefault();
@@ -69,24 +70,32 @@ export default function GameCanvas(){
     const pointerDown=(e:MouseEvent)=>{if(engine.mode!=='playing')return;if(e.button===0)engine.setInput({attack:true});if(e.button===2){e.preventDefault();engine.setInput({burst:true});}};
     const pointerUp=(e:MouseEvent)=>{if(e.button===0)engine.setInput({attack:false});if(e.button===2)engine.setInput({burst:false});};
     const contextMenu=(e:MouseEvent)=>e.preventDefault();
+    let lastSnapshotAt=0;
     const pump=()=>{if(engine.mode==='playing'){engine.setInput({left:heldRef.current.left,right:heldRef.current.right});if(heldRef.current.jump&&!engine.player.grounded)engine.setInput({jump:true});
       const pads=navigator.getGamepads?.()??[];const gp=Array.from(pads).find(Boolean);if(gp){const ax=gp.axes[0]??0;const left=ax<-.25||!!gp.buttons[14]?.pressed;const right=ax>.25||!!gp.buttons[15]?.pressed;engine.setInput({left,right});
         const edge=(i:number,key:keyof typeof gamepadRef.current)=>{const down=!!gp.buttons[i]?.pressed;if(down&&!gamepadRef.current[key])engine.setInput({[key]:true});gamepadRef.current[key]=down;};
         edge(0,'jump');edge(2,'dash');edge(3,'attack');edge(1,'burst');edge(4,'special');
       }
-    } pumpRef.current=requestAnimationFrame(pump);}; pumpRef.current=requestAnimationFrame(pump);
+    }
+      const now=performance.now(); if(now-lastSnapshotAt>50){lastSnapshotAt=now;setSnapshot(engine.getSnapshot());}
+      pumpRef.current=requestAnimationFrame(pump);
+    }; pumpRef.current=requestAnimationFrame(pump);
     window.addEventListener('keydown',keyDown);window.addEventListener('keyup',keyUp);window.addEventListener('blur',blur);document.addEventListener('visibilitychange',visibility);canvasRef.current.addEventListener('mousedown',pointerDown);canvasRef.current.addEventListener('mouseup',pointerUp);canvasRef.current.addEventListener('contextmenu',contextMenu);
     return()=>{clearInput();engine.destroy();engineRef.current=null;if(pumpRef.current!==null)cancelAnimationFrame(pumpRef.current);window.removeEventListener('keydown',keyDown);window.removeEventListener('keyup',keyUp);window.removeEventListener('blur',blur);document.removeEventListener('visibilitychange',visibility);canvasRef.current?.removeEventListener('mousedown',pointerDown);canvasRef.current?.removeEventListener('mouseup',pointerUp);canvasRef.current?.removeEventListener('contextmenu',contextMenu);};
   },[]);
   useEffect(()=>{engineRef.current?.setSettings(settings);try{localStorage.setItem('flikker-settings',JSON.stringify(settings));}catch{}},[settings]);
-  const resetInput=()=>{heldRef.current={left:false,right:false,jump:false};engineRef.current?.setInput({left:false,right:false,jump:false,dash:false,attack:false,burst:false,special:false});}; const begin=()=>{resetInput();engineRef.current?.begin();setShowSettings(false);}; const restart=()=>{resetInput();engineRef.current?.begin();setShowSettings(false);}; const togglePause=()=>{const e=engineRef.current;if(!e)return;e.setInput({left:false,right:false,jump:false,dash:false,attack:false,burst:false,special:false});e.setMode(snapshot.mode==='paused'?'playing':'paused');setSnapshot(e.getSnapshot());};
-  const healthPercent=`${(snapshot.health/4)*100}%`; const lanternPercent=`${snapshot.lantern}%`; const storyActive=snapshot.storyTimer>0&&snapshot.storyLine; const showBoss=snapshot.bossMaxHealth>0&&snapshot.bossHealth>0&&(snapshot.area==='THE CHAPEL'||snapshot.area==='THE DESCENT'||snapshot.area==='EATER ARENA'); const bossName=snapshot.area==='EATER ARENA'?'Lantern Eater':'Bell Warden';
+  useEffect(()=>{if(snapshot.mode!=='playing')return;const scene=characterScenes[snapshot.area];setCharacterScene(scene);const t=window.setTimeout(()=>setCharacterScene(undefined),6500);return()=>window.clearTimeout(t);},[snapshot.area,snapshot.mode]);
+  const resetInput=()=>{heldRef.current={left:false,right:false,jump:false};gamepadRef.current={jump:false,dash:false,attack:false,burst:false,special:false};engineRef.current?.setInput({left:false,right:false,jump:false,dash:false,attack:false,burst:false,special:false});}; const begin=()=>{resetInput();engineRef.current?.begin();setShowSettings(false);}; const restart=()=>{resetInput();engineRef.current?.begin();setShowSettings(false);}; const togglePause=()=>{const e=engineRef.current;if(!e)return;e.setInput({left:false,right:false,jump:false,dash:false,attack:false,burst:false,special:false});e.setMode(snapshot.mode==='paused'?'playing':'paused');setSnapshot(e.getSnapshot());};
+  const healthPercent=`${(snapshot.health/4)*100}%`; const lanternPercent=`${snapshot.lantern}%`; const storyActive=snapshot.storyTimer>0&&snapshot.storyLine; const showBoss=snapshot.bossMaxHealth>0&&snapshot.bossHealth>0&&(snapshot.area==='THE CHAPEL'||snapshot.area==='THE DESCENT'||snapshot.area==='THE LAST VESTIBULE'||snapshot.area==='EATER ARENA'); const bossName=snapshot.area==='EATER ARENA'?'Lantern Eater':snapshot.area==='THE LAST VESTIBULE'?'Bell Warden':'Bell Warden';
   return <main className="game-shell" style={{filter:`brightness(${settings.brightness})`}}><canvas className="game-canvas" ref={canvasRef} data-testid="game-canvas"/><div className="grain"/>
     {snapshot.mode==='title'&&!showSettings&&<TitleScreen onStart={begin} onSettings={()=>setShowSettings(true)}/>} {showSettings&&<SettingsPanel settings={settings} onChange={setSettings} onClose={()=>setShowSettings(false)}/>} 
     {snapshot.mode==='playing'&&<div className="game-overlay hud" aria-label="Game HUD"><div className="hud-top"><div className="hud-area"><div className="hud-kicker">current place / {String(snapshot.progress*100|0).padStart(2,'0')}%</div><div className="hud-location" data-testid="text-area">{snapshot.area}</div></div><div className="hud-bars">
       <div className="meter lantern-meter"><div className="meter-label"><span>LANTERN</span><strong data-testid="text-lantern">{Math.ceil(snapshot.lantern)}</strong></div><div className="meter-track"><div className="meter-fill" style={{width:lanternPercent}}/></div></div>
       <div className="meter"><div className="meter-label"><span>VITAL</span><strong data-testid="text-health">{snapshot.health}</strong></div><div className="meter-track"><div className="meter-fill health" style={{width:healthPercent}}/></div></div>
-    </div></div>{storyActive&&<div className="story-card" data-testid="story-card"><div className="story-rule"/><p>{snapshot.storyKicker}</p><strong>{snapshot.storyLine}</strong></div>}{snapshot.toast&&<div className="toast-line" data-testid="text-toast">{snapshot.toast}</div>}
+    </div></div>
+      {storyActive&&<div className="story-card" data-testid="story-card"><div className="story-rule"/><p>{snapshot.storyKicker}</p><strong>{snapshot.storyLine}</strong></div>}
+      {characterScene&&<div className="character-card" data-testid="character-card"><div className="character-mark"/><p className="character-role">{characterScene.role}</p><h3>{characterScene.name}</h3><strong>{characterScene.line}</strong>{characterScene.whisper&&<small>{characterScene.whisper}</small>}</div>}
+      {snapshot.toast&&<div className="toast-line" data-testid="text-toast">{snapshot.toast}</div>}
       {showBoss&&<div className="boss-meter"><div className="boss-name"><span>{snapshot.area==='EATER ARENA'?'THE DEEP':'THE CHAPEL'}</span>{bossName}</div><div className="boss-track"><div className="boss-fill" style={{width:`${(snapshot.bossHealth/snapshot.bossMaxHealth)*100}%`}}/></div></div>}
       <div className="hud-hint"><kbd>A</kbd><kbd>D</kbd> move <i/><kbd>SPACE</kbd> jump <i/><kbd>SHIFT</kbd> dash <i/><kbd>J</kbd> strike <i/><kbd>K</kbd> flare <i/><kbd>E</kbd> Lumen</div>{settings.touchControls&&<TouchControls engine={engineRef.current}/>}</div>}
     {snapshot.mode==='paused'&&!showSettings&&<PausePanel onResume={togglePause} onSettings={()=>setShowSettings(true)} onRestart={restart}/>} {snapshot.mode==='ending'&&<EndingPanel onRestart={restart}/>}</main>;
