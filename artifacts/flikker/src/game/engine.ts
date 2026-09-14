@@ -1,2 +1,2 @@
-// Flikker design-overhaul engine: Fear -> Doubt -> Identity.
-export { FlikkerEngine } from './engine_v4';
+// Stable engine facade. Campaign layout, story and presentation data live beside the engine.
+export { FlikkerEngine } from './engine_v3';
