@@ -78,11 +78,15 @@ button:focus-visible { outline: 1px solid #dfbc70; outline-offset: 4px; }
 .meter-track { height: 4px; overflow: hidden; background: rgba(186,197,191,.17); clip-path: polygon(0 0, 100% 0, 99% 100%, 1% 100%); }
 .meter-fill { height: 100%; background: #dbad59; box-shadow: 0 0 14px rgba(232,173,73,.68); transition: width .18s ease; }
 .meter-fill.health { background: #aabcc1; box-shadow: 0 0 10px rgba(160,199,207,.45); }
-.story-card { position: absolute; top: 17%; left: 50%; width: min(420px, calc(100% - 2rem)); transform: translateX(-50%); padding: .8rem 1rem 1rem; border-left: 1px solid rgba(215,192,139,.7); background: linear-gradient(90deg, rgba(9,15,21,.72), transparent); animation: story-in .5s ease both; text-align: left; }
+.narrative-stack { position: absolute; top: 6.8rem; left: 50%; display: flex; flex-direction: column; gap: .45rem; width: min(520px, calc(100% - 2rem)); transform: translateX(-50%); pointer-events: none; }
+.story-card { position: relative; width: 100%; padding: .62rem 2.5rem .68rem 1rem; border-left: 2px solid rgba(215,192,139,.78); background: linear-gradient(90deg, rgba(6,13,20,.88), rgba(8,16,22,.66) 75%, rgba(8,16,22,0)); animation: story-in .35s ease both; text-align: left; pointer-events: auto; box-shadow: 0 10px 30px rgba(0,0,0,.12); }
 .story-card .story-rule { position: absolute; top: 0; left: 0; width: 54px; height: 1px; background: #d6ad64; }
-.story-card p { margin: 0 0 .5rem; color: #d6ad64; font-size: .53rem; letter-spacing: .24em; }
-.story-card strong { color: #d9ded4; font: 400 1.12rem/1.3 var(--app-font-serif); letter-spacing: .01em; }
-.toast-line { position: absolute; left: 50%; top: 12%; transform: translateX(-50%); color: #d3bd8d; font-size: .6rem; letter-spacing: .22em; text-transform: uppercase; text-shadow: 0 2px 14px #030507; animation: fade-line 3.8s ease both; white-space: nowrap; }
+.story-card p { margin: 0 0 .28rem; color: #d6ad64; font-size: .49rem; letter-spacing: .24em; }
+.story-card strong { display: block; color: #d9ded4; font: 400 .98rem/1.24 var(--app-font-serif); letter-spacing: .01em; }
+.story-help { display: block; margin-top: .35rem; color: #7d8d8d; font-size: .44rem; letter-spacing: .08em; text-transform: uppercase; }
+.story-dismiss { position: absolute; top: .45rem; right: .55rem; width: 1.35rem; height: 1.35rem; padding: 0; border: 1px solid rgba(221,194,136,.38); border-radius: 50%; color: #ddc38c; background: rgba(12,21,26,.72); font: 400 1rem/1 var(--app-font-sans); cursor: pointer; }
+.story-dismiss:hover { color: #fff1c9; border-color: #e2bd6b; background: rgba(108,74,35,.58); }
+.toast-line { position: absolute; left: 50%; top: 4.9rem; transform: translateX(-50%); color: #d3bd8d; font-size: .54rem; letter-spacing: .22em; text-transform: uppercase; text-shadow: 0 2px 14px #030507; animation: fade-line 3.8s ease both; white-space: nowrap; }
 .boss-meter { position: absolute; left: 50%; bottom: 2.3rem; width: min(470px, 58vw); transform: translateX(-50%); text-align: center; }
 .boss-name { color: #b6c4c2; font-size: .57rem; letter-spacing: .28em; text-transform: uppercase; }
 .boss-name span { margin-right: .8rem; color: #c99143; }
@@ -133,7 +137,7 @@ button:focus-visible { outline: 1px solid #dfbc70; outline-offset: 4px; }
   .meter { width: 130px; margin-bottom: .52rem; }
   .hud-hint { display: none; }
   .boss-meter { bottom: 10.4rem; width: 68vw; }
-  .story-card { top: 18%; }
+  .narrative-stack { top: 6.1rem; width: min(460px, calc(100% - 1.5rem)); }
 }
 @media (max-width: 560px) {
   .title-screen { padding: 1.2rem; }
@@ -144,8 +148,8 @@ button:focus-visible { outline: 1px solid #dfbc70; outline-offset: 4px; }
   .title-note { margin-top: 2.4rem; font-size: .48rem; line-height: 1.7; }
   .title-credit { font-size: .45rem; }
   .hud-location { font-size: .62rem; }
-  .story-card strong { font-size: 1rem; }
-  .toast-line { top: 35%; font-size: .52rem; }
+   .story-card strong { font-size: .9rem; }
+   .toast-line { top: 8.1rem; font-size: .48rem; }
   .pause-panel, .ending-panel { padding: 2rem 1.35rem; }
   .touch-controls { inset-inline: .65rem; }
 }

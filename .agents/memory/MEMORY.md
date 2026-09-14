@@ -1,0 +1,1 @@
+- [Narrative overlay rule](narrative-overlay.md) — story and character messages belong in a dismissible upper rail, never over the active player path.
