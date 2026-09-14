@@ -1,2 +1,2 @@
-// Stable upgraded gameplay engine.
-export { FlikkerEngine } from './engine_v3';
+// Flikker design-overhaul engine: Fear -> Doubt -> Identity.
+export { FlikkerEngine } from './engine_v4';
