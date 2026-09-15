@@ -11,7 +11,7 @@ const hit=(a:{x:number;y:number;w:number;h:number},b:{x:number;y:number;w:number
 type Input = InputState & { special?: boolean };
 type Anim = 'idle'|'run'|'jump'|'fall'|'dash'|'attack1'|'attack2'|'attack3'|'flare'|'special'|'hurt';
 
-const startPlayer=():Player=>({x:150,y:570,w:30,h:54,vx:0,vy:0,facing:1,grounded:false,coyote:0,jumpBuffer:0,dashTimer:0,dashCooldown:0,attackTimer:0,attackCooldown:0,burstTimer:0,burstCooldown:0,veilTimer:0,veilCooldown:0,health:4,maxHealth:4,lantern:100,maxLantern:100,invuln:0,hurtFlash:0,landTimer:0,runTime:0,hurtTimer:0});
+const startPlayer=():Player=>({x:150,y:570,w:30,h:54,vx:0,vy:0,facing:1,grounded:false,coyote:0,jumpBuffer:0,dashTimer:0,dashCooldown:0,attackTimer:0,attackCooldown:0,burstTimer:0,burstCooldown:0,veilTimer:0,veilCooldown:0,health:4,maxHealth:4,lantern:100,maxLantern:100,invuln:0,hurtFlash:0,weapon:'LANTERN CORE',skin:'DAWN',landTimer:0,runTime:0,hurtTimer:0});
 
 const story=[
  {x:0,k:'THE FIRST WAKING',l:'The lantern is warm. Someone was holding it before you.',d:4.8},
